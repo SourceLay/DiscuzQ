@@ -1,0 +1,11 @@
+/framework
+/vendor
+/composer.lock
+/.idea
+/config/config.php
+.project
+.settings
+/node_modules
+.php_cs.cache
+/public/storage
+/storage/install.lock
