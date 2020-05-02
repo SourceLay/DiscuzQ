@@ -1,0 +1,1 @@
+- 请将 `paraparty_default.php` 重命名为 `paraparty.php`

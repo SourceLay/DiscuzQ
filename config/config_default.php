@@ -174,5 +174,6 @@ return [
                 'sign_name' => '', // 短信签名，如果使用默认签名，该字段可缺省（对应官方文档中的sign）
             ],
         ],
-    ]
+    ],
+    "paraparty" => include "paraparty.php"
 ];
