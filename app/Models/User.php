@@ -5,6 +5,10 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Models;
 
 use App\Traits\Notifiable;
@@ -34,6 +38,7 @@ use Illuminate\Support\Carbon;
  * @property string $last_login_ip
  * @property string $register_ip
  * @property string $register_reason
+ * @property string $email          // Eric Modified
  * @property int $thread_count
  * @property int $follow_count
  * @property int $fans_count

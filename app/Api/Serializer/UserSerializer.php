@@ -5,6 +5,10 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Serializer;
 
 use App\Models\User;
@@ -97,12 +101,17 @@ class UserSerializer extends AbstractSerializer
     /**
      * 获取头像地址
      *
+     * Eric Modified
+     *
      * @param User $model
      * @return string
      */
     public function getAvatarUrl(User $model)
     {
-        return $model->avatar ? $model->avatar . '?' . Carbon::parse($model->avatar_at)->timestamp : '';
+        return $model->avatar ?
+            $model->avatar . '?' . Carbon::parse($model->avatar_at)->timestamp :
+            "http://www.gravatar.com/avatar/".($model->email ? md5(strtolower(trim($model->email))) : 0).
+            "?d=mp&s=60&r=g";
     }
 
     /**
