@@ -84,6 +84,7 @@ class UserSerializer extends AbstractSerializer
                 'identity'          => $model->identity,
                 'realname'          => $model->realname,
                 'mobile'            => $model->mobile,
+                'email'             => $model->email,
             ];
         }
 
