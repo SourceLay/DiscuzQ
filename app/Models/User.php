@@ -249,6 +249,20 @@ class User extends Model
     }
 
     /**
+     * Eric Modified
+     *
+     * @param $email
+     * @return $this
+     */
+    public function changeEmail($email)
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+
+    /**
      * Check if a given password matches the user's password.
      *
      * @param string $password

@@ -110,9 +110,10 @@ class UserSerializer extends AbstractSerializer
     public function getAvatarUrl(User $model)
     {
         return $model->avatar ?
-            $model->avatar . '?' . Carbon::parse($model->avatar_at)->timestamp :
-            "http://www.gravatar.com/avatar/".($model->email ? md5(strtolower(trim($model->email))) : 0).
-            "?d=mp&s=60&r=g";
+            $model->avatar . '?' . Carbon::parse($model->avatar_at)->timestamp : (
+                $model->email ? "https://www.gravatar.com/avatar/".($model->email ? md5(strtolower(trim($model->email))) : 0).
+                    "?d=mp&s=60&r=g" : ""
+            );
     }
 
     /**

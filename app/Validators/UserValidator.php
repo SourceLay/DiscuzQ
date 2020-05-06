@@ -5,6 +5,10 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Validators;
 
 use App\Models\User;
@@ -132,6 +136,9 @@ class UserValidator extends AbstractValidator
                 'regex:/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/',
             ],
             'realname' => 'required',
+            'email' => [  // Eric Modified
+                'regex:/(^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$)/',
+            ],
         ];
 
         if ($this->user) {
