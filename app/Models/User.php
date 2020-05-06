@@ -5,6 +5,10 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Models;
 
 use App\Traits\Notifiable;
@@ -34,6 +38,7 @@ use Illuminate\Support\Carbon;
  * @property string $last_login_ip
  * @property string $register_ip
  * @property string $register_reason
+ * @property string $email          // Eric Modified
  * @property int $thread_count
  * @property int $follow_count
  * @property int $fans_count
@@ -242,6 +247,20 @@ class User extends Model
 
         return $this;
     }
+
+    /**
+     * Eric Modified
+     *
+     * @param $email
+     * @return $this
+     */
+    public function changeEmail($email)
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
 
     /**
      * Check if a given password matches the user's password.

@@ -5,6 +5,10 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Exceptions;
 
 use Discuz\Locale\AbstractLocaleException;
@@ -52,5 +56,15 @@ class TranslatorException extends AbstractLocaleException
     public function getDetail() : array
     {
         return $this->detail;
+    }
+
+    /**
+     * Eric Modified
+     *
+     * @inheritDoc
+     */
+    protected function getMessageInfo(): string
+    {
+        return $this->message;
     }
 }

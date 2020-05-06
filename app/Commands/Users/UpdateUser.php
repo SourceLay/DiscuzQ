@@ -5,6 +5,10 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Commands\Users;
 
 use App\Events\Users\ChangeUserStatus;
@@ -85,6 +89,19 @@ class UpdateUser
             }
             $user->changePassword($newPassword);
             $validator['password'] = $newPassword;
+        }
+
+        // Eric Modified
+        // 修改邮箱
+        if ($newEmail = Arr::get($attributes, 'email')) {
+            if ($isSelf) {
+                $verifyPwd = $user->checkPassword(Arr::get($attributes, 'password'));
+                if (!$verifyPwd) {
+                    throw new TranslatorException('user_update_error', ['not_match_used_password']);
+                }
+            }
+            $user->changeEmail($newEmail);
+            $validator['email'] = $newEmail;
         }
 
         // 修改支付密码
