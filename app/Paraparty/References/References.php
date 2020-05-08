@@ -3,11 +3,14 @@
 
 namespace App\Paraparty\References;
 
+use App\Paraparty\Models\Reference;
 use App\Paraparty\Helper\Config as ParaConfig;
 use App\Models\Post;
 use App\Models\User;
+use App\Repositories\PostRepository;
 use App\Repositories\ThreadRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class References
@@ -50,7 +53,6 @@ class References
     /**
      * 插入引用信息
      *
-     * @param ThreadRepository $threads
      * @param User $actor
      * @param string $content
      * @param int $tid
@@ -58,7 +60,7 @@ class References
      * @param $ip
      * @throws BindingResolutionException
      */
-    public static function update(ThreadRepository $threads, User $actor, string $content, int $tid, int $post_id, $ip)
+    public static function update(User $actor, string $content, int $tid, int $post_id, $ip)
     {
         try {
             $pattern = ParaConfig::get( "paraparty.references.url.update.detecting_pattern", null);
@@ -67,16 +69,37 @@ class References
         }
         if ($pattern === null) {return;}
 
-        preg_match_all($pattern, $content,$matches);
+        // 获取现有数据
+        $references = Reference::fetch_all_by_post_id($post_id);
 
-        foreach ($matches["tid"] as $mentioned_tid)
-            self::add_reference($threads, $actor, (int)$mentioned_tid, $tid, $post_id, $ip);
+        // 匹配帖子内容
+        preg_match_all($pattern, $content,$matches);
+        foreach ($matches["tid"] as $mentioned_tid) {
+            $reference = self::check_exists($references, (int)$mentioned_tid);
+            if ($reference === null) {
+                // 如果不存在
+                self::add_reference($actor, (int)$mentioned_tid, $tid, $post_id, $ip);
+            } else {
+                // 如果已存在
+                $posts = new PostRepository();
+                $target_post = $posts->findOrFail($reference->get_target_pid(), $actor);
+                $target_post->restore($actor)->save();
+            }
+        }
+
+        // 将 $references 剩下的删除
+        for ($i = 0; $i < count($references); $i++){
+            $reference = $references[$i];
+            $posts = new PostRepository();
+            $target_post = $posts->findOrFail($reference->get_target_pid(), $actor);
+            $target_post->hide($actor)->save();
+        }
+
     }
 
     /**
      * 插入引用信息
      *
-     * @param ThreadRepository $threads
      * @param User $actor
      * @param int $mentioned_tid
      * @param int $tid
@@ -84,10 +107,11 @@ class References
      * @param $ip
      * @throws BindingResolutionException
      */
-    private static function add_reference(ThreadRepository $threads, User $actor, int $mentioned_tid, int $tid, int $post_id, $ip){
+    private static function add_reference(User $actor, int $mentioned_tid, int $tid, int $post_id, $ip){
         if ($mentioned_tid == $tid) return;
 
         try {
+            $threads = new ThreadRepository();
             $memtioned_thread = $threads->findOrFail($mentioned_tid, $actor);
         } catch (ModelNotFoundException $e) {
             return;
@@ -106,6 +130,8 @@ class References
             false
         );
         $reference->save();
+
+        Reference::build($post_id, $mentioned_tid, $reference->id)->save();
     }
 
     /**
@@ -131,6 +157,35 @@ class References
         } else {
             $post->setRelation("operator", $post->getRelation("user"));
         }
+    }
+
+    /**
+     * 检查是否现有内容
+     *
+     * @param Collection $references
+     * @param int $mentioned_tid
+     * @return bool
+     */
+    private static function check_exists(Collection &$references, int $mentioned_tid)
+    {
+        $found_index = null;
+
+        for ($i = 0; $i < count($references); $i++){
+            $reference = $references[$i];
+            if ($reference->target_tid == $mentioned_tid) {
+                $found_index = $i;
+                break;
+            };
+        }
+
+        if ($found_index === null) {
+            return null;
+        } else {
+            $reference = $references[$found_index];
+            $references->forget($found_index);
+            return $reference;
+        }
+
     }
 
 }
