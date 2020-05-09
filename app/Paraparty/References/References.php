@@ -124,7 +124,7 @@ class References
             return;
         }
 
-        $content = json_encode((object)["type"=>"reference", "tid"=>$tid, "post_id"=>$post_id, "operator"=>$actor->id]);
+        $content = json_encode((object)["type"=>"reference", "thread_id"=>$tid, "post_id"=>$post_id, "operator"=>$actor->id]);
 
         $reference = Post::reply(
             $mentioned_tid,
