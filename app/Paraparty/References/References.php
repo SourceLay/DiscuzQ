@@ -73,8 +73,15 @@ class References
         $references = Reference::fetch_all_by_post_id($post_id);
 
         // 匹配帖子内容
+        $pending_list = collect([]);
         preg_match_all($pattern, $content,$matches);
         foreach ($matches["tid"] as $mentioned_tid) {
+            $pending_list->push((int)$mentioned_tid);
+        }
+        $pending_list = $pending_list->unique();
+
+        // 开始处理引用信息
+        foreach ($pending_list as $mentioned_tid) {
             $reference = self::check_exists($references, (int)$mentioned_tid);
             if ($reference === null) {
                 // 如果不存在
