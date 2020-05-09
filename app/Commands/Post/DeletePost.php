@@ -5,12 +5,17 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Commands\Post;
 
 use App\Events\Post\Deleted;
 use App\Events\Post\Deleting;
 use App\Models\Post;
 use App\Models\User;
+use App\Paraparty\References\References;
 use App\Repositories\PostRepository;
 use Discuz\Auth\AssertPermissionTrait;
 use Discuz\Auth\Exception\PermissionDeniedException;
@@ -77,6 +82,10 @@ class DeletePost
         $post->delete();
 
         $this->dispatchEventsFor($post, $this->actor);
+
+        // Eric Modified
+        // TODO 先使用 hide 代替永久删除
+        References::hide($this->actor, $this->postId);
 
         return $post;
     }

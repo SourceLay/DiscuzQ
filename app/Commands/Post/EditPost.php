@@ -160,9 +160,16 @@ class EditPost
         }
         if (isset($attributes['isDeleted'])) {
             if ($attributes['isDeleted']) {
-                References::delete($this->actor, $this->postId);
+                References::hide($this->actor, $this->postId);
             } else {
                 References::restore($this->actor, $this->postId);
+            }
+        }
+        if (isset($attributes['isApproved'])) {
+            if ($attributes['isApproved']) {
+                References::restore($this->actor, $this->postId);
+            } else {
+                References::hide($this->actor, $this->postId);
             }
         }
         return $post;

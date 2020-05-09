@@ -103,7 +103,7 @@ class References
 
     }
 
-    public static function delete(User $actor, int $post_id){
+    public static function hide(User $actor, int $post_id){
         // 获取现有数据
         $references = Reference::fetch_all_by_post_id($post_id);
 

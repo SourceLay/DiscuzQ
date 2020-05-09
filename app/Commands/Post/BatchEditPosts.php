@@ -5,12 +5,17 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Commands\Post;
 
 use App\Events\Post\PostWasApproved;
 use App\Events\Post\Saved;
 use App\Events\Post\Saving;
 use App\Models\User;
+use App\Paraparty\References\References;
 use App\Repositories\PostRepository;
 use Discuz\Foundation\EventsDispatchTrait;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -126,6 +131,23 @@ class BatchEditPosts
                 $result['meta'][] = ['id' => $id, 'message' => $e->getMessage()];
                 continue;
             }
+
+            // Eric Modified
+            if (isset($attributes['isDeleted'])) {
+                if ($attributes['isDeleted']) {
+                    References::hide($this->actor, $post->id);
+                } else {
+                    References::restore($this->actor, $post->id);
+                }
+            }
+            if (isset($attributes['isApproved'])) {
+                if ($attributes['isApproved']) {
+                    References::restore($this->actor, $post->id);
+                } else {
+                    References::hide($this->actor, $post->id);
+                }
+            }
+
         }
 
         return $result;
