@@ -58,7 +58,6 @@ class References
      * @param int $tid
      * @param int $post_id
      * @param $ip
-     * @throws BindingResolutionException
      */
     public static function update(User $actor, string $content, int $tid, int $post_id, $ip)
     {
@@ -104,6 +103,26 @@ class References
 
     }
 
+    public static function delete(User $actor, int $post_id){
+        // 获取现有数据
+        $references = Reference::fetch_all_by_post_id($post_id);
+
+        // 将 $references 剩下的删除
+        for ($i = 0; $i < count($references); $i++){
+            $reference = $references[$i];
+            $posts = new PostRepository();
+            $target_post = $posts->findOrFail($reference->get_target_pid(), $actor);
+            $target_post->hide($actor)->save();
+        }
+    }
+
+    public static function restore(User $actor, int $post_id) {
+        $posts = new PostRepository();
+        $target_post = $posts->findOrFail($post_id, $actor);
+        $content = $target_post->content;
+        self::update($actor, $content, $target_post->thread_id, $post_id, $target_post->ip);
+    }
+
     /**
      * 插入引用信息
      *
@@ -112,10 +131,14 @@ class References
      * @param int $tid
      * @param int $post_id
      * @param $ip
-     * @throws BindingResolutionException
      */
     private static function add_reference(User $actor, int $mentioned_tid, int $tid, int $post_id, $ip){
         if ($mentioned_tid == $tid) return;
+        try {
+            $reference_bot_user_id = self::reference_bot_user_id();
+        } catch (BindingResolutionException $e) {
+            return;
+        }
 
         try {
             $threads = new ThreadRepository();
@@ -129,7 +152,7 @@ class References
         $reference = Post::reply(
             $mentioned_tid,
             $content,
-            self::reference_bot_user_id(),
+            $reference_bot_user_id,
             $ip,
             null,
             $actor->id,
@@ -139,31 +162,6 @@ class References
         $reference->save();
 
         Reference::build($post_id, $mentioned_tid, $reference->id)->save();
-    }
-
-    /**
-     * 获取引用操作者信息
-     *
-     * @param $post
-     * @throws BindingResolutionException
-     */
-    public static function get_references_info(&$post)
-    {
-        if ($post['user_id'] == self::reference_bot_user_id()) {
-
-            $content = $post['content'];
-
-            $obj = json_decode($content, true);
-
-            $operator = User::find($obj['operator']);
-
-            //$relations = $post->getRelations();
-            //array_push($relations, ["operator" => $operator] );
-            //$post->setRelations($relations);
-            $post->setRelation("operator", $operator);
-        } else {
-            $post->setRelation("operator", $post->getRelation("user"));
-        }
     }
 
     /**

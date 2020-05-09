@@ -158,6 +158,13 @@ class EditPost
         if (isset($attributes['content'])) {
             References::update($this->actor, $content, $post->thread_id, $post->id, $post->ip);
         }
+        if (isset($attributes['isDeleted'])) {
+            if ($attributes['isDeleted']) {
+                References::delete($this->actor, $this->postId);
+            } else {
+                References::restore($this->actor, $this->postId);
+            }
+        }
         return $post;
     }
 }
