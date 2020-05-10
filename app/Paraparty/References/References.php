@@ -3,6 +3,7 @@
 
 namespace App\Paraparty\References;
 
+use App\Models\Thread;
 use App\Paraparty\Models\Reference;
 use App\Paraparty\Helper\Config as ParaConfig;
 use App\Models\Post;
@@ -116,11 +117,29 @@ class References
         }
     }
 
+    public static function thread_hide(User $actor, Thread $thread){
+        // $replies = $thread->replies()->get();
+        $replies = $thread->posts()->get();
+
+        foreach ($replies as $reply) {
+            self::hide($actor, $reply->id);
+        }
+    }
+
     public static function restore(User $actor, int $post_id) {
         $posts = new PostRepository();
         $target_post = $posts->findOrFail($post_id, $actor);
         $content = $target_post->content;
         self::update($actor, $content, $target_post->thread_id, $post_id, $target_post->ip);
+    }
+
+    public static function thread_restore(User $actor, Thread $thread){
+        // $replies = $thread->replies()->get();
+        $replies = $thread->posts()->get();
+
+        foreach ($replies as $reply) {
+            self::restore($actor, $reply->id);
+        }
     }
 
     /**

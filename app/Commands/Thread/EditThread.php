@@ -5,6 +5,10 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Commands\Thread;
 
 use App\Censor\Censor;
@@ -15,6 +19,7 @@ use App\Events\Users\UserRefreshCount;
 use App\Models\Thread;
 use App\Models\ThreadVideo;
 use App\Models\User;
+use App\Paraparty\References\References;
 use App\Repositories\ThreadRepository;
 use App\Repositories\ThreadVideoRepository;
 use App\Traits\ThreadNoticesTrait;
@@ -119,6 +124,15 @@ class EditThread
                     $this->actor,
                     ['notice_type' => 'isApproved', 'message' => $approvedMsg]
                 ));
+
+                // Eric Modified
+                if ($thread->is_approved) {
+                    // Eric Modified
+                    References::thread_restore($this->actor, $thread);
+                } else {
+                    // Eric Modified
+                    References::thread_hide($this->actor, $thread);
+                }
             }
         }
 
@@ -161,8 +175,14 @@ class EditThread
                 if ($attributes['isDeleted']) {
                     // 内容删除通知
                     $thread->hide($this->actor, ['message' => $message]);
+
+                    // Eric Modified
+                    References::thread_hide($this->actor, $thread);
                 } else {
                     $thread->restore($this->actor, ['message' => $message]);
+
+                    // Eric Modified
+                    References::thread_restore($this->actor, $thread);
                 }
             }
         }
