@@ -5,11 +5,16 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Commands\Post;
 
 use App\Events\Post\Deleted;
 use App\Events\Post\Deleting;
 use App\Models\User;
+use App\Paraparty\References\References;
 use App\Repositories\PostRepository;
 use Discuz\Foundation\EventsDispatchTrait;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -91,6 +96,11 @@ class BatchDeletePosts
                     $result['meta'][] = ['id' => $id, 'message' => $e->getMessage()];
                     continue;
                 }
+
+                // Eric Modified
+                // TODO 先使用 hide 代替永久删除
+                References::hide($this->actor, $post->id);
+
             } else {
                 $result['meta'][] = ['id' => $id, 'message' => 'permission_denied'];
                 continue;

@@ -199,7 +199,7 @@ class CreatePost
         // });
 
         // Eric Modified
-        References::update($threads, $this->actor, $content, $this->threadId, $post->id, $this->ip);
+        if ($post->is_approved) References::update($this->actor, $content, $this->threadId, $post->id, $this->ip);
 
         return $post;
     }
