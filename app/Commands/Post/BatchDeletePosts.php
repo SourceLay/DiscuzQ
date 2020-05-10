@@ -99,7 +99,7 @@ class BatchDeletePosts
 
                 // Eric Modified
                 // TODO 先使用 hide 代替永久删除
-                References::hide($this->actor, $post->id);
+                References::hide($this->actor, $post);
 
             } else {
                 $result['meta'][] = ['id' => $id, 'message' => 'permission_denied'];
