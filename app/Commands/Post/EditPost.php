@@ -156,22 +156,23 @@ class EditPost
 
         // Eric Modified
         if (isset($attributes['content'])) {
-            References::update($this->actor, $content, $post->thread_id, $post->id, $post->ip);
+            References::update($this->actor, $content, $post->thread_id, $post, $post->ip);
         }
         if (isset($attributes['isDeleted'])) {
             if ($attributes['isDeleted']) {
-                References::hide($this->actor, $this->postId);
+                References::hide($this->actor, $post);
             } else {
-                References::restore($this->actor, $this->postId);
+                References::restore($this->actor, $post);
             }
         }
         if (isset($attributes['isApproved'])) {
             if ($attributes['isApproved']) {
-                References::restore($this->actor, $this->postId);
+                References::restore($this->actor, $post);
             } else {
-                References::hide($this->actor, $this->postId);
+                References::hide($this->actor, $post);
             }
         }
+
         return $post;
     }
 }

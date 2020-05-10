@@ -85,7 +85,7 @@ class DeletePost
 
         // Eric Modified
         // TODO 先使用 hide 代替永久删除
-        References::hide($this->actor, $this->postId);
+        References::hide($this->actor, $post);
 
         return $post;
     }

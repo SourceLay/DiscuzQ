@@ -135,16 +135,16 @@ class BatchEditPosts
             // Eric Modified
             if (isset($attributes['isDeleted'])) {
                 if ($attributes['isDeleted']) {
-                    References::hide($this->actor, $post->id);
+                    References::hide($this->actor, $post);
                 } else {
-                    References::restore($this->actor, $post->id);
+                    References::restore($this->actor, $post);
                 }
             }
             if (isset($attributes['isApproved'])) {
                 if ($attributes['isApproved']) {
-                    References::restore($this->actor, $post->id);
+                    References::restore($this->actor, $post);
                 } else {
-                    References::hide($this->actor, $post->id);
+                    References::hide($this->actor, $post);
                 }
             }
 

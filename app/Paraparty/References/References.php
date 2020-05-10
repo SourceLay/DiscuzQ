@@ -52,15 +52,15 @@ class References
     }
 
     /**
-     * 插入引用信息
+     * 插入/更新 引用信息
      *
      * @param User $actor
      * @param string $content
      * @param int $tid
-     * @param int $post_id
+     * @param Post $post
      * @param $ip
      */
-    public static function update(User $actor, string $content, int $tid, int $post_id, $ip)
+    public static function update(User $actor, string $content, int $tid, Post $post, $ip)
     {
         try {
             $pattern = ParaConfig::get( "paraparty.references.url.update.detecting_pattern", null);
@@ -68,6 +68,10 @@ class References
             return;
         }
         if ($pattern === null) {return;}
+
+        if (($post == null) || (!$post->is_approved) || ($post->deleted_at != null)) {return;}
+
+        $post_id = $post->id;
 
         // 获取现有数据
         $references = Reference::fetch_all_by_post_id($post_id);
@@ -104,7 +108,15 @@ class References
 
     }
 
-    public static function hide(User $actor, int $post_id){
+    /**
+     * 隐藏引用
+     *
+     * @param User $actor
+     * @param Post $post
+     */
+    public static function hide(User $actor, Post $post){
+        $post_id = $post->id;
+
         // 获取现有数据
         $references = Reference::fetch_all_by_post_id($post_id);
 
@@ -117,28 +129,46 @@ class References
         }
     }
 
+    /**
+     * 隐藏全贴引用
+     *
+     * @param User $actor
+     * @param Thread $thread
+     */
     public static function thread_hide(User $actor, Thread $thread){
         // $replies = $thread->replies()->get();
         $replies = $thread->posts()->get();
 
         foreach ($replies as $reply) {
-            self::hide($actor, $reply->id);
+            self::hide($actor, $reply);
         }
     }
 
-    public static function restore(User $actor, int $post_id) {
+    /**
+     * 恢复引用
+     *
+     * @param User $actor
+     * @param Post $post
+     */
+    public static function restore(User $actor, Post $post) {
         $posts = new PostRepository();
-        $target_post = $posts->findOrFail($post_id, $actor);
+        $target_post = $posts->findOrFail($post->id, $actor);
         $content = $target_post->content;
-        self::update($actor, $content, $target_post->thread_id, $post_id, $target_post->ip);
+        self::update($actor, $content, $target_post->thread_id, $post, $target_post->ip);
     }
 
+    /**
+     * 恢复全贴引用
+     *
+     * @param User $actor
+     * @param Thread $thread
+     */
     public static function thread_restore(User $actor, Thread $thread){
         // $replies = $thread->replies()->get();
         $replies = $thread->posts()->get();
 
         foreach ($replies as $reply) {
-            self::restore($actor, $reply->id);
+            self::restore($actor, $reply);
         }
     }
 
@@ -184,7 +214,7 @@ class References
     }
 
     /**
-     * 检查是否现有内容
+     * 检查是否有现有引用
      *
      * @param Collection $references
      * @param int $mentioned_tid
