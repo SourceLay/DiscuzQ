@@ -60,8 +60,8 @@ export default {
       videoId = self.videoAppid
     }
     self.$nextTick(() => {
-      self.getVideoLang(self.videoFileid, videoId);
-    })
+        self.getVideoLang(self.videoFileid, videoId);
+    });
   },
   created: function () {
     this.loadCover = true;
@@ -75,14 +75,11 @@ export default {
     this.userId = browserDb.getLItem('tokenId');
     this.videoAppid = browserDb.getLItem('siteInfo')._data.qcloud.qcloud_app_id;
     this.videoAppidChild = browserDb.getLItem('siteInfo')._data.qcloud.qcloud_vod_sub_app_id;
-    this.loadUserInfo();
-    this.getForum();
-    if (this.userId) {
-      this.getUsers(browserDb.getLItem('tokenId')).then(res => {
-        this.getAuthority(res.readdata.groups[0]._data.id);
-        this.walletBalance = res.readdata._data.walletBalance;
-      });
-    }
+    this.getUsers().then(res => {
+      this.getAuthority(res.readdata.groups[0]._data.id);
+      this.walletBalance = res.readdata._data.walletBalance;
+    }).catch(() => {
+    });
     this.coverUrl = this.themeCon.threadVideo._data.cover_url
   },
   computed: {
@@ -96,10 +93,11 @@ export default {
     getVideoLang(fileID, appID, posterImg) {
       this.loadCover = true;
       this.loadVideo = false;
+      const maxWidth = appCommonH.isWeixin().isPc ? 580 : this.viewportWidth * 0.9;
       const playerParam = {
         fileID: fileID,
         appID: appID,
-        width: appCommonH.isWeixin().isPc ? 580 : this.viewportWidth * 0.9,
+        width: maxWidth,
         posterImage: false,
         autoplay: true,
         preload: 'auto',
@@ -108,22 +106,34 @@ export default {
           volumePanel: false
         },
       }
-      this.player = window.TCPlayer(this.tcPlayerId, playerParam);
+      this.player = TCPlayer(this.tcPlayerId, playerParam);
       var self = this;
-      this.player.on('ready', function() {
-        if (self.isWeixin) {
+      if (this.isiOS && this.isWeixin) {
+        this.player.ready(function() {
           self.loadCover = false;
           self.loadVideo = true;
-        }
-      });
+        });
+      }
       this.player.on('loadedmetadata', function() {
-        if (self.player.videoHeight() > 400) {
-          self.player.height(400);
-          self.player.width(400 * self.player.videoWidth() / self.player.videoHeight());
-        }
-        self.loadCover = false;
-        self.loadVideo = true;
-      })
+        self.adjustVideoAspect(maxWidth);
+      });
+      this.player.on('timeupdate', function() {
+        self.adjustVideoAspect(maxWidth);
+      });
+    },
+    adjustVideoAspect: function(maxWidth) {
+      if (this.player.videoHeight() > 400) {
+        this.player.height(400);
+        this.player.width(400 * this.player.videoWidth() / this.player.videoHeight());
+      } else if (this.player.videoWidth < maxWidth) {
+        this.player.width(this.player.videoWidth);
+      }
+      if (this.player.width() > maxWidth) {
+        this.player.width(maxWidth);
+        this.player.height(maxWidth * this.player.videoHeight() / this.player.videoWidth());
+      }
+      this.loadCover = false;
+      this.loadVideo = true;
     },
     //点击用户名称，跳转到用户主页
     jumpPerDet: function (id) {
@@ -136,57 +146,9 @@ export default {
       this.$router.push({ path: '/home-page' + '/' + id });
       // }
     },
-    //初始化请求用户信息
-    loadUserInfo() {
-      if (!this.userId) {
-        return false;
-      }
-      this.appFetch({
-        url: 'users',
-        method: 'get',
-        splice: '/' + this.userId,
-        data: {
-        }
-      }).then((res) => {
-        this.walletBalance = res.readdata._data.walletBalance;
-
-      })
-    },
     /*
    * 接口请求
    * */
-    getForum() {
-      this.appFetch({
-        url: 'forum',
-        method: 'get',
-        data: {}
-      }).then(res => {
-        if (res.errors) {
-          this.$toast.fail(res.errors[0].code);
-        } else {
-          this.sitePrice = res.readdata._data.set_site.site_price;
-          let day = res.readdata._data.set_site.site_expire;
-          switch (day) {
-            case '':
-              this.siteExpire = '永久有效';
-              break;
-            case '0':
-              this.siteExpire = '永久有效';
-              break;
-            default:
-              this.siteExpire = '有效期自加入起' + day + '天';
-              break;
-          }
-          if (res.readdata._data.paycenter.wxpay_close == true) {
-            this.payList.unshift({
-              name: '微信支付',
-              icon: 'icon-wxpay'
-            })
-          }
-        }
-      }).catch(err => {
-      })
-    },
     //购买内容
     buyTheme() {
       if(this.userId){
@@ -376,8 +338,6 @@ export default {
       }).catch(err => {
       })
     },
-    getUsersInfo() {
-    },
     getOrderStatus() {
       // alert('查询支付状态');
       // alert(this.orderSn);
@@ -419,16 +379,8 @@ export default {
       // alert('执行');
       this.$emit('listenToChildEvent', true);
     },
-    getUsers(id) {
-      return this.appFetch({
-        url: 'users',
-        method: 'get',
-        splice: '/' + id,
-        headers: { 'Authorization': 'Bearer ' + browserDb.getLItem('Authorization') },
-        data: {
-          include: ['groups']
-        }
-      }).then(res => {
+    getUsers() {
+      return this.$store.dispatch("appSiteModule/loadUser").then(res => {
         if (res.errors) {
           this.$toast.fail(res.errors[0].code);
         } else {

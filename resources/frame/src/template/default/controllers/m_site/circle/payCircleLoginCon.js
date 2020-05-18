@@ -66,13 +66,7 @@ export default {
 	methods: {
 		//请求站点信息，用于判断站点是否是付费站点
 		getInfo(initStatus = false) {
-			return this.appFetch({
-				url: 'forum',
-				method: 'get',
-				data: {
-					include: ['users'],
-				}
-			}).then((res) => {
+			this.$store.dispatch("appSiteModule/loadForum").then(res => {
 				if (res.errors) {
 					this.$toast.fail(res.errors[0].code);
 					throw new Error(res.error)
@@ -329,14 +323,7 @@ export default {
 			})
 		},
 		getUsers() {
-			return this.appFetch({
-				url: 'users',
-				method: 'get',
-				splice: '/' + browserDb.getLItem('tokenId'),
-				data: {
-					// include:['groups']
-				}
-			}).then(res => {
+			return this.$store.dispatch("appSiteModule/loadUser").then(res => {
 				if (res.errors) {
 					this.$toast.fail(res.errors[0].code);
 				} else {

@@ -226,13 +226,7 @@ export default {
     },
     getInfo() {
       //请求站点信息，用于判断站点是否是付费站点
-      this.appFetch({
-        url: 'forum',
-        method: 'get',
-        data: {
-          include: ['users'],
-        }
-      }).then((res) => {
+      this.$store.dispatch("appSiteModule/loadForum").then(res => {
         if (res.errors) {
           this.$toast.fail(res.errors[0].code);
           throw new Error(res.error)
@@ -267,32 +261,20 @@ export default {
     //请求用户信息
     getUser() {
       //初始化请求User信息，用于判断当前用户是否已付费
-      var userId = browserDb.getLItem('tokenId');
-      this.userId = userId;
-      if (this.userId) {
-        this.appFetch({
-          url: 'users',
-          method: 'get',
-          splice: '/' + this.userId,
-          data: {
-            include: 'groups',
-          }
-        }).then((res) => {
-          if (res.errors) {
-            this.$toast.fail(res.errors[0].code);
-            throw new Error(res.error)
-          } else {
-            this.userDet = res.readdata;
-            this.currentUserName = res.readdata._data.username;
-            this.currentUserAvatarUrl = res.readdata._data.avatarUrl;
-            this.walletBalance = res.readdata._data.walletBalance;
-            this.groupId = res.readdata.groups[0]._data.id;
-          }
+      this.$store.dispatch("appSiteModule/loadUser").then(res => {
+        if (res.errors) {
+          this.$toast.fail(res.errors[0].code);
+          throw new Error(res.error)
+        } else {
+          this.userDet = res.readdata;
+          this.currentUserName = res.readdata._data.username;
+          this.currentUserAvatarUrl = res.readdata._data.avatarUrl;
+          this.walletBalance = res.readdata._data.walletBalance;
+          this.groupId = res.readdata.groups[0]._data.id;
+        }
 
-        })
-      }
-
-
+      }).catch(() => {
+      });
     },
     detailIf(siteMode) {
       var token = browserDb.getLItem('Authorization');
