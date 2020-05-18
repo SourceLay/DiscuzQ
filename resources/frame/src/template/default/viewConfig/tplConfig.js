@@ -409,6 +409,14 @@ export default {
           title: "修改密码"
         }
       },
+      'change-username': {
+        comLoad: function (resolve) {
+          require(['../view/m_site/myInfo/myData/changeUsernameView'], resolve)
+        },
+        metaInfo: {
+          title: "修改用户名"
+        }
+      },
       'real-name': {
         comLoad: function (resolve) {
           require(['../view/m_site/myInfo/myData/realNameView'], resolve)
@@ -967,6 +975,8 @@ export default {
         const scale = document.documentElement.clientWidth / 320;
         // 设置页面根节点字体大小
         document.documentElement.style.fontSize = (baseSize * Math.min(scale, 2)) + 'px'
+        let viewportWidth = window.innerWidth;
+        document.getElementsByTagName("body")[0].style.marginLeft = (viewportWidth - 640) / 2 + 'px';
       }
       // 初始化
       setRem();
@@ -977,8 +987,6 @@ export default {
 
       document.getElementsByTagName("html")[0].style.backgroundColor = '#f9f9f9';
       document.getElementsByTagName("body")[0].style.width = "640px";
-      let viewportWidth = window.innerWidth;
-      document.getElementsByTagName("body")[0].style.marginLeft = (viewportWidth - 640) / 2 + 'px';
     }
 
   },

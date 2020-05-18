@@ -88,11 +88,7 @@ export default {
     * 接口请求
     * */
     getForum() {
-      return this.appFetch({
-        url: 'forum',
-        method: 'get',
-        data: {}
-      }).then(res => {
+      return this.$store.dispatch("appSiteModule/loadForum").then(res => {
         if (res.errors) {
           if (res.errors[0].detail) {
             this.$toast.fail(res.errors[0].code + '\n' + res.errors[0].detail[0])
@@ -111,7 +107,6 @@ export default {
             this.signUpShow = false
           }
         }
-      }).catch(err => {
       })
     },
     setSignData() {
@@ -132,9 +127,8 @@ export default {
           }
         }
       }).then(res => {
-        this.btnLoading = false;
-
         this.getForum().then(() => {
+          this.btnLoading = false;
           if (res.errors) {
             if (res.errors[0].detail) {
               this.$toast.fail(res.errors[0].code + '\n' + res.errors[0].detail[0])
@@ -153,7 +147,7 @@ export default {
             browserDb.setLItem('Authorization', token);
             browserDb.setLItem('tokenId', tokenId);
             browserDb.setLItem('refreshToken', refreshToken);
-
+            this.$store.dispatch("appSiteModule/invalidateForum");
             if (this.phoneStatus) {
               this.$router.push({ path: 'bind-phone' });
             } else if (this.siteMode === 'pay') {
