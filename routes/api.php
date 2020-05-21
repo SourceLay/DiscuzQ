@@ -84,6 +84,7 @@ $route->get('/oauth/wechat/web/user', 'wechat.web.user', ApiController\Users\Wec
 $route->get('/oauth/wechat/web/user/event', 'wechat.web.user.event', ApiController\Users\WechatWebUserLoginEventController::class);
 $route->post('/oauth/wechat/web/user/event', 'wechat.web.user.postevent', ApiController\Users\WechatWebUserLoginPostEventController::class);
 $route->get('/oauth/wechat/web/user/serach', 'wechat.web.user.search', ApiController\Users\WechatWebUserLoginSearchController::class);
+$route->get('/oauth/wechat/mini/program-code', 'wechat.mini.program.code', ApiController\Wechat\WechatMiniProgramCodeController::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -141,8 +142,8 @@ $route->get('/threads/{id}', 'threads.resource', ApiController\Threads\ResourceT
 $route->post('/threads', 'threads.create', ApiController\Threads\CreateThreadController::class);
 $route->patch('/threads/batch', 'threads.batchUpdate', ApiController\Threads\BatchUpdateThreadsController::class);
 $route->patch('/threads/{id}', 'threads.update', ApiController\Threads\UpdateThreadController::class);
-$route->delete('/threads/batch/{ids}', 'threads.batchDelete', ApiController\Threads\BatchDeleteThreadsController::class);
-$route->delete('/threads/{id}', 'threads.delete', ApiController\Threads\DeleteThreadController::class);
+//$route->delete('/threads/batch/{ids}', 'threads.batchDelete', ApiController\Threads\BatchDeleteThreadsController::class);
+//$route->delete('/threads/{id}', 'threads.delete', ApiController\Threads\DeleteThreadController::class);
 $route->post('/threads/notify/video', 'threads.notify.video', ApiController\Threads\Notify\ThreadVideoNotifyController::class);
 
 /*
@@ -157,8 +158,8 @@ $route->get('/posts/{id}', 'posts.resource', ApiController\Posts\ResourcePostCon
 $route->post('/posts', 'posts.create', ApiController\Posts\CreatePostController::class);
 $route->patch('/posts/batch', 'posts.batchUpdate', ApiController\Posts\BatchUpdatePostsController::class);
 $route->patch('/posts/{id}', 'posts.update', ApiController\Posts\UpdatePostController::class);
-$route->delete('/posts/batch/{ids}', 'posts.batchDelete', ApiController\Posts\BatchDeletePostsController::class);
-$route->delete('/posts/{id}', 'posts.delete', ApiController\Posts\DeletePostController::class);
+// $route->delete('/posts/batch/{ids}', 'posts.batchDelete', ApiController\Posts\BatchDeletePostsController::class);
+// $route->delete('/posts/{id}', 'posts.delete', ApiController\Posts\DeletePostController::class);
 
 /*
 |--------------------------------------------------------------------------
