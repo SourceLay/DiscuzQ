@@ -68,10 +68,15 @@ class References
 
         if (($post == null) || (!$post->is_approved) || ($post->deleted_at != null)) {return;}
 
+        try {
+            if ($actor->id == self::reference_bot_user_id()) {return;}
+        } catch (BindingResolutionException $e) {
+            return;
+        };
+
         $content = $post->content;
         $tid = $post->thread_id;
         $ip = $post->ip;
-
         $post_id = $post->id;
 
         // 获取现有数据
@@ -116,6 +121,12 @@ class References
      * @param Post $post
      */
     public static function hide(User $actor, Post $post){
+        try {
+            if ($actor->id == self::reference_bot_user_id()) {return;}
+        } catch (BindingResolutionException $e) {
+            return;
+        };
+
         $post_id = $post->id;
 
         // 获取现有数据
@@ -152,6 +163,12 @@ class References
      * @param Post $post
      */
     public static function restore(User $actor, Post $post) {
+        try {
+            if ($actor->id == self::reference_bot_user_id()) {return;}
+        } catch (BindingResolutionException $e) {
+            return;
+        };
+
         $posts = new PostRepository();
         $target_post = $posts->findOrFail($post->id, $actor);
         self::update($actor, $post);

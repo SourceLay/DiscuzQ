@@ -5,10 +5,6 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
-/**
- * Eric Modified
- */
-
 namespace App\Commands\Post;
 
 use App\Censor\Censor;
@@ -18,7 +14,6 @@ use App\Events\Post\Saving;
 use App\Models\Post;
 use App\Models\PostMod;
 use App\Models\User;
-use App\Paraparty\References\References;
 use App\Repositories\PostRepository;
 use App\Validators\PostValidator;
 use Discuz\Auth\AssertPermissionTrait;
@@ -94,9 +89,6 @@ class EditPost
                 $post->is_approved = 0;
             }
 
-            // Eric Modified
-            $content = References::detecting($content);
-
             $post->revise($content, $this->actor);
         } else {
             // 不修改内容时，不更新修改时间
@@ -153,25 +145,6 @@ class EditPost
         $post->raise(new Saved($post, $this->actor, $this->data));
 
         $this->dispatchEventsFor($post, $this->actor);
-
-        // Eric Modified
-        if (isset($attributes['content'])) {
-            References::update($this->actor,  $post);
-        }
-        if (isset($attributes['isDeleted'])) {
-            if ($attributes['isDeleted']) {
-                References::hide($this->actor, $post);
-            } else {
-                References::restore($this->actor, $post);
-            }
-        }
-        if (isset($attributes['isApproved'])) {
-            if ($attributes['isApproved']) {
-                References::restore($this->actor, $post);
-            } else {
-                References::hide($this->actor, $post);
-            }
-        }
 
         return $post;
     }
