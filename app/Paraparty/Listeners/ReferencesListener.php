@@ -11,6 +11,10 @@ use App\Events\Post\Restored as PostRestored;
 use App\Events\Post\Revised as PostRevised;
 use App\Events\Post\Deleted as PostDeleted;
 use App\Events\Post\PostWasApproved;
+use App\Events\Thread\Hidden as ThreadHidden;
+use App\Events\Thread\Restored as ThreadRestored;
+use App\Events\Thread\Deleted as ThreadDeleted;
+use App\Events\Thread\ThreadWasApproved;
 use App\Paraparty\References\References;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -24,6 +28,11 @@ class ReferencesListener
         $events->listen(PostRevised::class, [$this, 'whenPostRevised']);
         $events->listen(PostDeleted::class, [$this, 'whenPostDeleted']);
         $events->listen(PostWasApproved::class, [$this, 'whenPostWasApproved']);
+
+        $events->listen(ThreadHidden::class, [$this, 'whenThreadHidden']);
+        $events->listen(ThreadRestored::class, [$this, 'whenThreadRestored']);
+        $events->listen(ThreadDeleted::class, [$this, 'whenThreadDeleted']);
+        $events->listen(ThreadWasApproved::class, [$this, 'whenThreadWasApproved']);
     }
 
     public function whenPostCreated(PostCreated $event){
@@ -55,10 +64,34 @@ class ReferencesListener
     }
 
     public function whenPostWasApproved(PostWasApproved $event){
+        // if (($event->data['notice_type'] != 'isApproved')) {return;}
         if ($event->post->is_approved) {
             References::restore($event->actor, $event->post);
         } else {
             References::hide($event->actor, $event->post);
         }
     }
+
+    public function whenThreadHidden(ThreadHidden $event){
+        References::thread_hide($event->actor, $event->thread);
+    }
+
+    public function whenThreadRestored(ThreadRestored $event){
+        References::thread_restore($event->actor, $event->thread);
+    }
+
+    public function whenThreadDeleted(ThreadDeleted $event){
+        // TODO 先使用 hide 代替永久删除
+        References::thread_hide($event->actor, $event->thread);
+    }
+
+    public function whenThreadWasApproved(ThreadWasApproved $event){
+        if (($event->data['notice_type'] != 'isApproved')) {return;}
+        if ($event->thread->is_approved) {
+            References::thread_restore($event->actor, $event->thread);
+        } else {
+            References::thread_hide($event->actor, $event->thread);
+        }
+    }
+
 }
