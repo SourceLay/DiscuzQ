@@ -156,7 +156,7 @@ class EditPost
 
         // Eric Modified
         if (isset($attributes['content'])) {
-            References::update($this->actor, $content, $post->thread_id, $post, $post->ip);
+            References::update($this->actor,  $post);
         }
         if (isset($attributes['isDeleted'])) {
             if ($attributes['isDeleted']) {
