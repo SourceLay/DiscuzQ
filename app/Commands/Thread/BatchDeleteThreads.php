@@ -5,16 +5,11 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
-/**
- * Eric Modified
- */
-
 namespace App\Commands\Thread;
 
 use App\Events\Thread\Deleted;
 use App\Events\Thread\Deleting;
 use App\Models\User;
-use App\Paraparty\References\References;
 use App\Repositories\ThreadRepository;
 use Discuz\Foundation\EventsDispatchTrait;
 use Illuminate\Contracts\Bus\Dispatcher as BusDispatcher;
@@ -89,9 +84,6 @@ class BatchDeleteThreads
 
                 $thread->raise(new Deleted($thread));
                 $thread->delete();
-
-                // Eric Modified
-                References::thread_hide($this->actor, $thread);
 
                 //删除视频、视频文件
                 $bus->dispatch(

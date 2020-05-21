@@ -5,10 +5,6 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
-/**
- * Eric Modified
- */
-
 namespace App\Commands\Post;
 
 use App\Censor\Censor;
@@ -29,7 +25,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
-use App\Paraparty\References\References; // Eric Modified
 
 class CreatePost
 {
@@ -152,12 +147,9 @@ class CreatePost
             Arr::set($this->data, 'attributes.content', $content);
         }
 
-        // Eric Modified
-        $content = References::detecting(trim(Arr::get($this->data, 'attributes.content')));
-
         $post = $post->reply(
             $thread->id,
-            $content,
+            trim(Arr::get($this->data, 'attributes.content')),
             $this->actor->id,
             $this->ip,
             $this->replyPostId,
@@ -197,9 +189,6 @@ class CreatePost
         // $this->notifications->onePerUser(function () use ($post, $actor) {
         $this->dispatchEventsFor($post, $this->actor);
         // });
-
-        // Eric Modified
-        if ($post->is_approved) References::update($this->actor, $content, $this->threadId, $post, $this->ip);
 
         return $post;
     }

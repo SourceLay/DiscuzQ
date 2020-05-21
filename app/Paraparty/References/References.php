@@ -55,12 +55,9 @@ class References
      * 插入/更新 引用信息
      *
      * @param User $actor
-     * @param string $content
-     * @param int $tid
      * @param Post $post
-     * @param $ip
      */
-    public static function update(User $actor, string $content, int $tid, Post $post, $ip)
+    public static function update(User $actor, Post $post)
     {
         try {
             $pattern = ParaConfig::get( "paraparty.references.url.update.detecting_pattern", null);
@@ -71,6 +68,15 @@ class References
 
         if (($post == null) || (!$post->is_approved) || ($post->deleted_at != null)) {return;}
 
+        try {
+            if ($actor->id == self::reference_bot_user_id()) {return;}
+        } catch (BindingResolutionException $e) {
+            return;
+        };
+
+        $content = $post->content;
+        $tid = $post->thread_id;
+        $ip = $post->ip;
         $post_id = $post->id;
 
         // 获取现有数据
@@ -115,6 +121,12 @@ class References
      * @param Post $post
      */
     public static function hide(User $actor, Post $post){
+        try {
+            if ($actor->id == self::reference_bot_user_id()) {return;}
+        } catch (BindingResolutionException $e) {
+            return;
+        };
+
         $post_id = $post->id;
 
         // 获取现有数据
@@ -151,10 +163,15 @@ class References
      * @param Post $post
      */
     public static function restore(User $actor, Post $post) {
+        try {
+            if ($actor->id == self::reference_bot_user_id()) {return;}
+        } catch (BindingResolutionException $e) {
+            return;
+        };
+
         $posts = new PostRepository();
         $target_post = $posts->findOrFail($post->id, $actor);
-        $content = $target_post->content;
-        self::update($actor, $content, $target_post->thread_id, $post, $target_post->ip);
+        self::update($actor, $post);
     }
 
     /**

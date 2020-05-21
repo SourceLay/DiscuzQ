@@ -5,16 +5,11 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
-/**
- * Eric Modified
- */
-
 namespace App\Commands\Thread;
 
 use App\Events\Thread\Saving;
 use App\Events\Thread\ThreadWasApproved;
 use App\Models\User;
-use App\Paraparty\References\References;
 use App\Repositories\ThreadRepository;
 use Discuz\Foundation\EventsDispatchTrait;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -88,15 +83,6 @@ class BatchEditThreads
                             $this->actor,
                             ['notice_type' => 'isApproved', 'message' => $approvedMsg]
                         ));
-
-                        // Eric Modified
-                        if ($thread->is_approved) {
-                            // Eric Modified
-                            References::thread_restore($this->actor, $thread);
-                        } else {
-                            // Eric Modified
-                            References::thread_hide($this->actor, $thread);
-                        }
                     }
                 } else {
                     $result['meta'][] = ['id' => $id, 'message' => 'permission_denied'];
@@ -151,15 +137,8 @@ class BatchEditThreads
                         if ($attributes['isDeleted']) {
                             // 内容删除通知
                             $thread->hide($this->actor, ['message' => $message]);
-
-                            // Eric Modified
-                            References::thread_hide($this->actor, $thread);
-
                         } else {
                             $thread->restore($this->actor, ['message' => $message]);
-
-                            // Eric Modified
-                            References::thread_restore($this->actor, $thread);
                         }
                     }
                 } else {
