@@ -625,7 +625,7 @@ export default {
    * @return {[type]}        [description]
    */
 
-  beforeEnter: function (appStore, to, form, next) {
+  beforeEnter: function (appStore, to, from, next) {
     //判断设备
     let isWeixin = appCommonH.isWeixin().isWeixin;
     let isPhone = appCommonH.isWeixin().isPhone;
@@ -688,7 +688,8 @@ export default {
       'supplier-all-back',
       'circle-invite',
       'site-close',
-      'information-page'
+      'information-page',
+      'wx-qr-code'
     ];
 
     /*
@@ -699,6 +700,7 @@ export default {
       'wx-sign-up-bd',
       'supplier-all-back',
       'site-close',
+      'retrieve-pwd',
       'information-page',
       '/api/oauth/wechat',
       '/api/oauth/wechat/pc'
@@ -708,8 +710,8 @@ export default {
     /*
     * 获取tokenId
     * */
-    const tokenId = browserDb.getLItem('tokenId');
-    const Authorization = browserDb.getLItem('Authorization');
+    let tokenId = browserDb.getLItem('tokenId');
+    let Authorization = browserDb.getLItem('Authorization');
 
     /*
     * 前台路由全局处理
@@ -723,7 +725,9 @@ export default {
     var canWalletPay = '';  //钱包密码设置
     var modifyPhone = '';   //短信验证是否关闭
 
-    if (to.name === 'supplier-all-back' || form.name === 'supplier-all-back') {
+    browserDb.setLItem('prevRoute', from.name);
+
+    if (to.name === 'supplier-all-back' || from.name === 'supplier-all-back') {
       next();
     } else {
       appStore.dispatch('appSiteModule/loadForum').then(res => {
@@ -804,6 +808,12 @@ export default {
           /*已登录状态*/
           if (res.readdata._data.set_site.site_mode === 'pay') {
             this.getUsers(tokenId).then(userInfo => {
+              if (userInfo.errors) {
+                browserDb.removeLItem("tokenId");
+                browserDb.removeLItem("Authorization");
+                next({ path: '/' });
+                return;
+              }
               /*获取用户付费状态并判断*/
               if (userInfo.readdata._data.paid) {
                 /*付费状态下，用户已付费可以任意访问，但不能访问未登录可以访问的页面*/
@@ -831,7 +841,6 @@ export default {
             })
           } else {
             if (signInAndPayForAccess.includes(to.name)) {
-              // next(form.path)
               next('/')
             } else {
               next();
@@ -855,9 +864,18 @@ export default {
                 next();
               } else {
                 if (res.readdata._data.set_site.site_mode === 'public') {
+                  if (to.name == 'circle' || to.name == 'details/:themeId' || to.name == 'home-page/:userId') {
+                    next();
+                    return;
+                  }
                   next({ path: 'wx-sign-up-bd' });
                 } else if (res.readdata._data.set_site.site_mode === 'pay') {
-                  next({ path: 'pay-circle' });
+                  if (to.name === 'pay-circle') {
+                    next();
+                    return;
+                  } else {
+                    next({ path: 'pay-circle' });
+                  }
                 }
               }
             } else {
@@ -1048,7 +1066,11 @@ export default {
 };
 
 export function wxShare(shareData, toName) {
+  let isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   let url = window.location.href.split("#")[0];
+  if (isiOS && window.entryUrl && !/wechatdevtools/.test(navigator.userAgent)) { // iOS下，URL必须设置为整个SPA的入口URL
+    url = window.entryUrl;
+  }
   appFetch({
     url: 'weChatShare',
     method: 'get',

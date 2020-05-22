@@ -29,6 +29,7 @@ use Discuz\Foundation\EventsDispatchTrait;
 use Discuz\SpecialChar\SpecialCharServer;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class UpdateUser
@@ -78,6 +79,7 @@ class UpdateUser
      */
     public function __invoke()
     {
+        /** @var User $user */
         $user = $this->users->findOrFail($this->id, $this->actor);
 
         $isSelf = $this->actor->id === $user->id;
@@ -175,6 +177,12 @@ class UpdateUser
             OperationLog::writeLog($this->actor, $user, $actionType, $logMsg);
         }
 
+        if ($expiredAt = Arr::get($this->data, 'data.attributes.expired_at')) {
+            $this->assertAdmin($this->actor);
+
+            $user->expired_at = Carbon::parse($expiredAt);
+        }
+
         if ($groups = Arr::get($attributes, 'groupId')) {
             $this->assertCan($this->actor, 'edit.group', $user);
 
@@ -228,7 +236,10 @@ class UpdateUser
             $user->changeUsername($username);
         }
 
-        if ($signature = Arr::get($attributes, 'signature')) {
+        if (Arr::has($attributes, 'signature')) {
+            // 可为空
+            $signature = Arr::get($attributes, 'signature');
+
             // 敏感词校验
             $this->censor->checkText($signature);
             if ($this->censor->isMod) {

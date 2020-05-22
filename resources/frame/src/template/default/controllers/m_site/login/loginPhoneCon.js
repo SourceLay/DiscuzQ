@@ -38,7 +38,6 @@ export default {
       this.$router.push({path:'/login-user'})
     },
     wxLoginClick(){
-      // this.$router.push({path:'/wx-login-bd'})
       this.$router.push({path:'wx-qr-code'});
     },
 
@@ -112,6 +111,9 @@ export default {
           browserDb.setLItem('Authorization', token);
           browserDb.setLItem('tokenId', tokenId);
           browserDb.setLItem('refreshToken',refreshToken);
+
+          this.$store.dispatch("appSiteModule/invalidateUser");
+          this.$store.dispatch("appSiteModule/invalidateForum");
 
           this.getUsers(tokenId).then(res=>{
             if (res.readdata._data.paid){
