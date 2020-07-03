@@ -115,7 +115,7 @@ class ListOrdersController extends AbstractListController
         $orders = $this->search($actor, $filter, $sort, $limit, $offset);
 
         $document->addPaginationLinks(
-            $this->url->route('order.list'),
+            $this->url->route('orders.list'),
             $request->getQueryParams(),
             $offset,
             $limit,
@@ -126,23 +126,6 @@ class ListOrdersController extends AbstractListController
             'total' => $this->total,
             'pageCount' => ceil($this->total / $limit),
         ]);
-
-        // 主题标题
-        if (in_array('thread.firstPost', $include)) {
-            $orders->load('thread.firstPost')
-                ->map(function (Order $order) {
-                    if ($order->thread) {
-                        if ($order->thread->type == 1) {
-                            $title = Str::limit($order->thread->title, 40);
-                        } else {
-                            $title = Str::limit($order->thread->firstPost->content, 40);
-                            $title = str_replace("\n", '', $title);
-                        }
-
-                        $order->thread->title = htmlspecialchars($title);
-                    }
-                });
-        }
 
         return $orders->loadMissing($include);
     }
@@ -203,10 +186,31 @@ class ListOrdersController extends AbstractListController
             $query->where('created_at', '<=', $order_end_time);
         });
         $query->when($order_username, function ($query) use ($order_username) {
-            $query->whereIn('orders.user_id', User::where('users.username', $order_username)->select('id', 'username')->get());
+            $query->whereIn(
+                'orders.user_id',
+                User::query()
+                    ->select('id', 'username')
+                    ->where('users.username', $order_username)
+                    ->get()
+            );
         });
         $query->when($order_product, function ($query) use ($order_product) {
-            $query->whereIn('orders.thread_id', Thread::whereIn('threads.id', Post::where('content', 'like', "%$order_product%")->select('posts.thread_id')->groupBy('posts.thread_id')->get())->select('threads.id')->get());
+            $query->whereIn(
+                'orders.thread_id',
+                Thread::query()
+                    ->select('threads.id')
+                    ->whereIn(
+                        'threads.id',
+                        Post::query()
+                            ->select('posts.thread_id')
+                            ->where('is_first', true)
+                            ->where('content', 'like', "%$order_product%")
+                            ->groupBy('posts.thread_id')
+                            ->get()
+                    )
+                    ->orWhere('threads.title', 'like', "%$order_product%")
+                    ->get()
+            );
         });
     }
 }

@@ -12,8 +12,9 @@
 namespace App\Api\Serializer;
 
 use App\Models\User;
-use Carbon\Carbon;
+use App\Repositories\UserFollowRepository;
 use Discuz\Api\Serializer\AbstractSerializer;
+use Discuz\Contracts\Setting\SettingsRepository;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Tobscure\JsonApi\Relationship;
 
@@ -29,12 +30,16 @@ class UserSerializer extends AbstractSerializer
      */
     protected $gate;
 
+    protected $userFollow;
+
     /**
      * @param Gate $gate
+     * @param UserFollowRepository $userFollow
      */
-    public function __construct(Gate $gate)
+    public function __construct(Gate $gate, UserFollowRepository $userFollow)
     {
         $this->gate = $gate;
+        $this->userFollow = $userFollow;
     }
 
     /**
@@ -48,6 +53,8 @@ class UserSerializer extends AbstractSerializer
 
         $canEdit = $gate->allows('edit', $model);
 
+        $settings = app()->make(SettingsRepository::class);
+
         $attributes = [
             'id'                => (int) $model->id,
             'username'          => $model->username,
@@ -56,7 +63,10 @@ class UserSerializer extends AbstractSerializer
             'threadCount'       => (int) $model->thread_count,
             'followCount'       => (int) $model->follow_count,
             'fansCount'         => (int) $model->fans_count,
-            'follow'            => $model->follow,
+            'likedCount'        => (int) $model->liked_count,
+            'signature'         => $model->signature,
+            'usernameBout'      => (int) $model->username_bout,
+            'follow'            => $this->userFollow->findFollowDetail($this->actor->id, $model->id), //TODO 解决N+1
             'status'            => $model->status,
             'loginAt'           => $this->formatDate($model->login_at),
             'joinedAt'          => $this->formatDate($model->joined_at),
@@ -68,6 +78,7 @@ class UserSerializer extends AbstractSerializer
             'showGroups'        => $model->hasPermission('showGroups'),     // 是否显示用户组
             'registerReason'    => $model->register_reason,                 // 注册原因
             'banReason'         => '',                                      // 禁用原因
+            'denyStatus'        => (bool)$model->denyStatus,
         ];
 
         // 判断禁用原因
@@ -80,7 +91,9 @@ class UserSerializer extends AbstractSerializer
             $attributes += [
                 'originalMobile'    => $model->getRawOriginal('mobile'),
                 'registerIp'        => $model->register_ip,
+                'registerPort'      => $model->register_port,
                 'lastLoginIp'       => $model->last_login_ip,
+                'lastLoginPort'     => $model->last_login_port,
                 'identity'          => $model->identity,
                 'realname'          => $model->realname,
                 'mobile'            => $model->mobile,
@@ -94,8 +107,21 @@ class UserSerializer extends AbstractSerializer
             $attributes += [
                 'canWalletPay'  => $gate->allows('walletPay', $model),
                 'walletBalance' => $model->userWallet->available_amount,
+                'walletFreeze'  => $model->userWallet->freeze_amount,
             ];
         }
+
+        // 是否管理员
+        if ($this->actor->isAdmin()) {
+            $attributes += [
+                'canEditUsername' => true,  // 可否更改用户名
+            ];
+        } else {
+            $attributes += [
+                'canEditUsername' => $model->username_bout >= $settings->get('username_bout', 'default', 1) ? false : true,
+            ];
+        }
+
 
         return $attributes;
     }
@@ -125,9 +151,9 @@ class UserSerializer extends AbstractSerializer
      */
     public function getIsReal(User $model)
     {
-        if(isset($model->realname) && $model->realname != null){
+        if (isset($model->realname) && $model->realname != null) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
@@ -148,5 +174,23 @@ class UserSerializer extends AbstractSerializer
     public function groups($user)
     {
         return $this->hasMany($user, GroupSerializer::class);
+    }
+
+    /**
+     * @param $user
+     * @return Relationship
+     */
+    public function deny($user)
+    {
+        return $this->hasMany($user, UserSerializer::class);
+    }
+
+    /**
+     * @param $user
+     * @return Relationship
+     */
+    public function dialog($user)
+    {
+        return $this->hasOne($user, DialogSerializer::class);
     }
 }

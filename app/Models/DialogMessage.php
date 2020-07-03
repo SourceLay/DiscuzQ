@@ -7,13 +7,15 @@
 
 namespace App\Models;
 
-use App\Formatter\Formatter;
+use App\Formatter\DialogMessageFormatter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
  * @property int $user_id
+ * @property int $attachment_id
  * @property int $dialog_id
  * @property int $message_text
  * @property Carbon $updated_at
@@ -22,6 +24,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 class DialogMessage extends Model
 {
+    const SUMMARY_LENGTH = 40;
+
+    const SUMMARY_END_WITH = '...';
+
     /**
      * {@inheritdoc}
      */
@@ -38,7 +44,7 @@ class DialogMessage extends Model
     /**
      * The text formatter instance.
      *
-     * @var Formatter
+     * @var DialogMessageFormatter
      */
     protected static $formatter;
 
@@ -67,6 +73,22 @@ class DialogMessage extends Model
         $this->attributes['message_text'] = $value;
     }
 
+    public function getSummaryAttribute()
+    {
+        $message_text = Str::of($this->message_text ?: '');
+
+        if ($message_text->length() > self::SUMMARY_LENGTH) {
+            $message_text = static::$formatter->parse(
+                $message_text->substr(0, self::SUMMARY_LENGTH)->finish(self::SUMMARY_END_WITH)
+            );
+            $message_text = static::$formatter->render($message_text);
+        } else {
+            $message_text = $this->formatMessageText();
+        }
+
+        return str_replace('<br>', '', $message_text);
+    }
+
     public function formatMessageText()
     {
         $messageText = $this->attributes['message_text'] ?: '';
@@ -76,8 +98,35 @@ class DialogMessage extends Model
         return $messageText;
     }
 
+    public static function build($user_id, $dialog_id, $attachment_id, $message_text)
+    {
+        $dialogMessage = new static();
+
+        $dialogMessage->user_id       = $user_id;
+        $dialogMessage->dialog_id     = $dialog_id;
+        $dialogMessage->attachment_id = $attachment_id;
+        $dialogMessage->message_text  = $message_text;
+
+        return $dialogMessage;
+    }
+
+    public static function setFormatter(DialogMessageFormatter $formatter)
+    {
+        static::$formatter = $formatter;
+    }
+
+    public static function getFormatter()
+    {
+        return static::$formatter;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function attachment()
+    {
+        return $this->belongsTo(Attachment::class)->where('type', Attachment::TYPE_OF_DIALOG_MESSAGE);
     }
 }

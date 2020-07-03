@@ -1,14 +1,12 @@
 <template>
   <div class="user-details-box">
     <div class="details-wallet-header">
-      <p class="details-wallet-header__name">
-        {{ this.userInfo.username }}（UID：{{ this.userInfo.id }}）
-      </p>
+      <p
+        class="details-wallet-header__name"
+      >{{ this.userInfo.username }}（UID：{{ this.userInfo.id }}）</p>
       <i class="details-wallet-header__i"></i>
       <span class="details-wallet-header__details">详情</span>
-      <span @click="$router.push({ path: '/admin/wallet', query: query })"
-        >钱包</span
-      >
+      <span @click="$router.push({ path: '/admin/wallet', query: query })">钱包</span>
     </div>
 
     <Card>
@@ -115,8 +113,7 @@
           type="datetime"
           placeholder="选择日期时间"
           value-format="yyyy-MM-dd HH:mm:ss"
-        >
-        </el-date-picker>
+        ></el-date-picker>
       </div>
     </Card>
 

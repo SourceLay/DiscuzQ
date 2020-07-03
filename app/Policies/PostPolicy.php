@@ -54,6 +54,13 @@ class PostPolicy extends AbstractPolicy
      */
     public function find(User $actor, Builder $query)
     {
+        // 过滤不存在用户的内容
+        $query->whereExists(function ($query) {
+            $query->selectRaw('1')
+                ->from('users')
+                ->whereColumn('posts.user_id', 'users.id');
+        });
+
         // 确保帖子所在主题可见。
         $query->whereExists(function ($query) use ($actor) {
             $query->selectRaw('1')
@@ -99,8 +106,7 @@ class PostPolicy extends AbstractPolicy
      */
     public function edit(User $actor, Post $post)
     {
-        // 作者本人，或管理员才可编辑
-        if ($post->user_id == $actor->id || $actor->isAdmin()) {
+        if ($actor->hasPermission('editOwnThreadOrPost') && ($post->user_id == $actor->id || $actor->isAdmin())) {
             return true;
         }
     }
@@ -112,6 +118,8 @@ class PostPolicy extends AbstractPolicy
      */
     public function hide(User $actor, Post $post)
     {
-        return $this->edit($actor, $post);
+        if ($actor->hasPermission('hideOwnThreadOrPost') && ($post->user_id == $actor->id || $actor->isAdmin())) {
+            return true;
+        }
     }
 }

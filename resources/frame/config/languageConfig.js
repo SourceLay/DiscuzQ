@@ -21,7 +21,6 @@ const config = {
   permission_denied: '没有权限，请联系站点管理员',
   validation_error: '验证错误',
   user_update_error: '修改信息失败',
-  upload_time_not_up: '上传头像频繁，一天仅允许上传一次头像',
   order_post_not_found: '订单主题不存在',
   order_type_not_found: '订单类型有误',
   order_create_failure: '订单创建失败',
@@ -47,7 +46,7 @@ const config = {
   tencent_vod_transcode_error: '腾讯云云点播转码模板未设置',
   tencent_vod_subappid_error: '腾讯云云点播子应用错误',
   pay_password_failures_times_toplimit: '您输入的密码错误次数已超限，请点击忘记密码找回或次日后重试',
-  qcloud_vod_cover_template_not_found: '截图模版不存在'
+  offIAccount_server_config_signature_failed: '公众号服务器配置：签名验证失败',
 };
 
 Vue.prototype.getLang = function (key) {

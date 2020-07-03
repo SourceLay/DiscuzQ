@@ -13,17 +13,20 @@ namespace App\Models;
 
 use App\Traits\Notifiable;
 use Discuz\Auth\Guest;
+use Discuz\Database\ScopeVisibilityTrait;
+use Discuz\Foundation\EventGeneratorTrait;
 use Discuz\Http\UrlGenerator;
 use Illuminate\Contracts\Auth\Access\Gate;
+use Illuminate\Contracts\Filesystem\Factory as Filesystem;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Discuz\Foundation\EventGeneratorTrait;
-use Discuz\Database\ScopeVisibilityTrait;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -36,7 +39,9 @@ use Illuminate\Support\Carbon;
  * @property int $status
  * @property string $union_id
  * @property string $last_login_ip
+ * @property int $last_login_port
  * @property string $register_ip
+ * @property int $register_port
  * @property string $register_reason
  * @property string $email          // Eric Modified
  * @property string $signature
@@ -44,6 +49,7 @@ use Illuminate\Support\Carbon;
  * @property int $thread_count
  * @property int $follow_count
  * @property int $fans_count
+ * @property int $liked_count
  * @property Carbon $login_at
  * @property Carbon $avatar_at
  * @property Carbon $joined_at
@@ -58,8 +64,7 @@ use Illuminate\Support\Carbon;
  * @property UserWechat $wechat
  * @package App\Models
  * @method truncate()
- * @method static find($id)
- * @method static where($column, $array)
+ * @method hasAvatar()
  */
 class User extends Model
 {
@@ -250,12 +255,14 @@ class User extends Model
         return $this;
     }
 
-    public function changeUsername($username)
+    public function changeUsername($username, $isAdmin = false)
     {
         $this->username = $username;
 
-        // 修改次数+1
-        $this->username_bout += 1;
+        if (!$isAdmin) {
+            // 修改次数+1
+            $this->username_bout += 1;
+        }
 
         return $this;
     }
@@ -326,8 +333,18 @@ class User extends Model
 
     public function getAvatarAttribute($value)
     {
-        if ($value && strpos($value, '://') === false) {
-            return app(UrlGenerator::class)->to('/storage/avatars/'.$value);
+        if ($value) {
+            if (strpos($value, '://') === false) {
+                $value = app(UrlGenerator::class)->to('/storage/avatars/' . $value)
+                    . '?' . \Carbon\Carbon::parse($this->avatar_at)->timestamp;
+            } else {
+                $value = app(Filesystem::class)
+                    ->disk('avatar_cos')
+                    ->temporaryUrl(
+                        'public/avatar/' . $this->id . '.png',
+                        \Carbon\Carbon::now()->addHour()
+                    );
+            }
         }
 
         return $value;
@@ -414,6 +431,54 @@ class User extends Model
         return false;
     }
 
+    /**
+     * 刷新用户关注数
+     * @return $this
+     */
+    public function refreshUserFollow()
+    {
+        $this->follow_count = $this->userFollow()->count();
+        return $this;
+    }
+
+    /**
+     * 刷新用户粉丝数
+     * @return $this
+     */
+    public function refreshUserFans()
+    {
+        $this->fans_count = $this->userFans()->count();
+        return $this;
+    }
+
+    /**
+     * 刷新用户点赞主题数
+     * @return $this
+     */
+    public function refreshUserLiked()
+    {
+        $this->liked_count = $this->postUser()
+            ->join('posts', 'post_user.post_id', '=', 'posts.id')
+            ->where('posts.is_first', true)
+            ->count();
+        return $this;
+    }
+
+    /**
+     * 注册用创建一个随即用户名
+     * getNewUsername
+     * @return string
+     */
+    public static function getNewUsername()
+    {
+        $username = trans('validation.attributes.username_prefix') . Str::random(6);
+        $user = User::where('username', $username)->first();
+        if ($user) {
+            return self::getNewUsername();
+        }
+        return $username;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | 关联模型
@@ -422,27 +487,17 @@ class User extends Model
 
     public function logs()
     {
-        return $this->morphMany(OperationLog::class, 'log_able');
+        return $this->morphMany(UserActionLogs::class, 'log_able');
     }
 
     public function latelyLog()
     {
-        return $this->hasOne(OperationLog::class, 'log_able_id')->orderBy('id', 'desc');
+        return $this->hasOne(UserActionLogs::class, 'log_able_id')->orderBy('id', 'desc');
     }
 
     public function wechat()
     {
         return $this->hasOne(UserWechat::class);
-    }
-
-    /**
-     * Define the relationship with the user's profiles.
-     *
-     * @return HasOne
-     */
-    public function userProfiles()
-    {
-        return $this->hasOne(UserProfile::class);
     }
 
     /**
@@ -482,7 +537,8 @@ class User extends Model
      */
     public function groups()
     {
-        return $this->belongsToMany(Group::class);
+        return $this->belongsToMany(Group::class)
+            ->withPivot('expiration_time');
     }
 
     /**
@@ -537,16 +593,9 @@ class User extends Model
         return $this->hasMany(UserFollow::class, 'to_user_id');
     }
 
-    public function refreshUserFollow()
+    public function postUser()
     {
-        $this->follow_count = $this->userFollow()->count();
-        return $this;
-    }
-
-    public function refreshUserFans()
-    {
-        $this->fans_count = $this->userFans()->count();
-        return $this;
+        return $this->hasMany(PostUser::class);
     }
 
     /*
@@ -563,7 +612,7 @@ class User extends Model
      */
     public function permissions()
     {
-        $groupIds = $this->groups->pluck('id')->all();
+        $groupIds = (Arr::get($this->getRelations(), 'groups') ?? $this->groups)->pluck('id')->all();
 
         return Permission::whereIn('group_id', $groupIds);
     }
@@ -631,8 +680,24 @@ class User extends Model
      * @param $query
      * @return mixed
      */
-    public function scopeHaveAvatar($query)
+    public function scopeHasAvatar($query)
     {
         return $query->whereNotNull('avatar');
+    }
+
+    /**
+     * @return mixed
+     */
+    public function deny()
+    {
+        return $this->belongsToMany(User::class, 'deny_users', 'user_id', 'deny_user_id', null, null, 'deny');
+    }
+
+    /**
+     * @return mixed
+     */
+    public function denyFrom()
+    {
+        return $this->belongsToMany(User::class, 'deny_users', 'deny_user_id', 'user_id', null, null, 'denyFrom');
     }
 }

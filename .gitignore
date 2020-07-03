@@ -3,10 +3,10 @@
 /composer.lock
 /.idea
 /config/config.php
-.project
-.settings
 /node_modules
 .php_cs.cache
+/public/admin.html
+/public/s9e.js
 /public/storage
 /storage/install.lock
 /public/docs

@@ -27,11 +27,15 @@ class GroupSerializer extends AbstractSerializer
     public function getDefaultAttributes($model)
     {
         return [
-            'name'  => $model->name,
-            'type'  => $model->type,
-            'color' => $model->color,
-            'icon'  => $model->icon,
-            'default' => $model->default
+            'name'              => $model->name,
+            'type'              => $model->type,
+            'color'             => $model->color,
+            'icon'              => $model->icon,
+            'default'           => $model->default,
+            'isDisplay'         => (bool) $model->is_display,
+            'isPaid'           => (bool) $model->is_paid,
+            'fee'               => (float) $model->fee,
+            'days'              => (int) $model->days,
         ];
     }
 

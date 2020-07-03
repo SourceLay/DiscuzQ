@@ -7,57 +7,59 @@
 
 namespace App\Api\Serializer;
 
-use App\Commands\Attachment\CreateAttachment;
+use App\Models\Attachment;
+use App\Traits\HasPaidContent;
+use Carbon\Carbon;
 use Discuz\Api\Serializer\AbstractSerializer;
-use Discuz\Contracts\Setting\SettingsRepository;
-use Discuz\Http\UrlGenerator;
 use Illuminate\Contracts\Filesystem\Factory as Filesystem;
 use Illuminate\Support\Str;
 use Tobscure\JsonApi\Relationship;
 
 class AttachmentSerializer extends AbstractSerializer
 {
+    use HasPaidContent;
+
     /**
      * {@inheritdoc}
      */
     protected $type = 'attachments';
 
     /**
-     * @var UrlGenerator
-     */
-    protected $url;
-
-    /*
      * @var Filesystem
      */
     protected $filesystem;
 
     /**
-     * AttachmentSerializer constructor.
-     * @param UrlGenerator $url
      * @param Filesystem $filesystem
-     * @param SettingsRepository $settings
      */
-    public function __construct(UrlGenerator $url, Filesystem $filesystem, SettingsRepository $settings)
+    public function __construct(Filesystem $filesystem)
     {
-        $this->url = $url;
         $this->filesystem = $filesystem;
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @param Attachment $model
      */
     public function getDefaultAttributes($model)
     {
-        $path = $model->file_path . '/' . $model->attachment;
+        $this->paidContent($model);
 
-        $url = $this->filesystem->disk($model->is_remote ? 'attachment_cos' : 'attachment')->url($path);
+        $path = Str::finish($model->file_path, '/') . $model->attachment;
 
-        $fixWidth = CreateAttachment::FIX_WIDTH;
+        if ($model->is_remote) {
+            $url = $this->filesystem->disk('attachment_cos')->temporaryUrl($path, Carbon::now()->addMinutes(5));
+        } else {
+            $url = $this->filesystem->disk('attachment')->url($path);
+        }
+
+        $fixWidth = Attachment::FIX_WIDTH;
 
         $attributes = [
             'order'             => $model->order,
-            'isGallery'         => $model->is_gallery,
+            'type'              => $model->type,
+            'type_id'           => $model->type_id,
             'isRemote'          => $model->is_remote,
             'isApproved'        => $model->is_approved,
             'url'               => $url,
@@ -70,10 +72,14 @@ class AttachmentSerializer extends AbstractSerializer
         ];
 
         // 图片缩略图地址
-        if ($model->is_gallery) {
-            $attributes['thumbUrl'] = $model->is_remote
-                ? $url . '?imageMogr2/thumbnail/' . $fixWidth . 'x' . $fixWidth
-                : Str::replaceLast('.', '_thumb.', $url);
+        if ($model->type == Attachment::TYPE_OF_IMAGE) {
+            if ($model->getAttribute('blur')) {
+                $attributes['thumbUrl'] = $url;
+            } else {
+                $attributes['thumbUrl'] = $model->is_remote
+                    ? $url . '&imageMogr2/thumbnail/' . $fixWidth . 'x' . $fixWidth
+                    : Str::replaceLast('.', '_thumb.', $url);
+            }
         }
 
         return $attributes;

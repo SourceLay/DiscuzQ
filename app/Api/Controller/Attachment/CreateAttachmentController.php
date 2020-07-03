@@ -42,13 +42,13 @@ class CreateAttachmentController extends AbstractCreateController
     {
         $actor = $request->getAttribute('actor');
         $file = Arr::get($request->getUploadedFiles(), 'file');
-        $order = (int)Arr::get($request->getParsedBody(), 'order', 0);
-        $isGallery = Arr::get($request->getParsedBody(), 'isGallery', false);
-        $isSound = Arr::get($request->getParsedBody(), 'isSound', 0);
+        $name = Arr::get($request->getParsedBody(), 'name', '');
+        $type = (int) Arr::get($request->getParsedBody(), 'type', 0);
+        $order = (int) Arr::get($request->getParsedBody(), 'order', 0);
         $ipAddress = ip($request->getServerParams());
 
         return $this->bus->dispatch(
-            new CreateAttachment($actor, $file, $ipAddress, $isGallery, $isSound, $order)
+            new CreateAttachment($actor, $file, $name, $ipAddress, $type, $order)
         );
     }
 }

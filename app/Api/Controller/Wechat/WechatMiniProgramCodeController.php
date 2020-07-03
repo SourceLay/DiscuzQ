@@ -7,12 +7,11 @@
 
 namespace App\Api\Controller\Wechat;
 
-use Discuz\Contracts\Setting\SettingsRepository;
+use Discuz\Wechat\EasyWechatTrait;
 use Illuminate\Support\Arr;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use EasyWeChat\Factory;
 
 /**
  * 微信小程序 - 小程序码
@@ -21,26 +20,14 @@ use EasyWeChat\Factory;
  */
 class WechatMiniProgramCodeController implements RequestHandlerInterface
 {
-    /**
-     * @var Factory
-     */
-    protected $easyWechat;
-
-    /**
-     * @var SettingsRepository
-     */
-    protected $settings;
+    use EasyWechatTrait;
 
     /**
      * WechatMiniProgramCodeController constructor.
-     *
-     * @param Factory $easyWechat
-     * @param SettingsRepository $settings
      */
-    public function __construct(Factory $easyWechat, SettingsRepository $settings)
+    public function __construct()
     {
-        $this->easyWechat = $easyWechat;
-        $this->settings = $settings;
+        //
     }
 
     /**
@@ -49,21 +36,17 @@ class WechatMiniProgramCodeController implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $data = Arr::get($request->getParsedBody(), 'data', []);
+        $data = $request->getQueryParams();
 
-        $width = Arr::get($data, 'attributes.width', '');
-        $colorR = Arr::get($data, 'attributes.color.r', '');
-        $colorG = Arr::get($data, 'color.g', '');
-        $colorB = Arr::get($data, 'color.b', '');
+        $path = Arr::get($data, 'path', '');
+        $width = Arr::get($data, 'width', '');
+        $colorR = Arr::get($data, 'r', '');
+        $colorG = Arr::get($data, 'g', '');
+        $colorB = Arr::get($data, 'b', '');
 
-        $config = [
-            'app_id' => $this->settings->get('miniprogram_app_id', 'wx_miniprogram'),
-            'secret' => $this->settings->get('miniprogram_app_secret', 'wx_miniprogram'),
-        ];
+        $app = $this->miniProgram();
 
-        $app = $this->easyWechat::miniProgram($config);
-
-        return $app->app_code->get('path/to/page', [
+        $response = $app->app_code->get($path, [
             'width' => $width,
             'line_color' => [
                 'r' => $colorR,
@@ -71,5 +54,9 @@ class WechatMiniProgramCodeController implements RequestHandlerInterface
                 'b' => $colorB,
             ],
         ]);
+
+        $response = $response->withoutHeader('Content-disposition');
+
+        return $response;
     }
 }

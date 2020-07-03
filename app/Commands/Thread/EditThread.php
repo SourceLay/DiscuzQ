@@ -8,10 +8,8 @@
 namespace App\Commands\Thread;
 
 use App\Censor\Censor;
-use App\Events\Category\CategoryRefreshCount;
 use App\Events\Thread\Saving;
 use App\Events\Thread\ThreadWasApproved;
-use App\Events\Users\UserRefreshCount;
 use App\Models\Thread;
 use App\Models\ThreadVideo;
 use App\Models\User;
@@ -22,6 +20,7 @@ use App\Validators\ThreadValidator;
 use Discuz\Auth\AssertPermissionTrait;
 use Discuz\Auth\Exception\PermissionDeniedException;
 use Discuz\Foundation\EventsDispatchTrait;
+use Illuminate\Contracts\Bus\Dispatcher as BusDispatcher;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
@@ -71,11 +70,12 @@ class EditThread
      * @param Censor $censor
      * @param ThreadValidator $validator
      * @param ThreadVideoRepository $threadVideos
+     * @param BusDispatcher $bus
      * @return Thread
      * @throws PermissionDeniedException
      * @throws ValidationException
      */
-    public function handle(Dispatcher $events, ThreadRepository $threads, Censor $censor, ThreadValidator $validator, ThreadVideoRepository $threadVideos)
+    public function handle(Dispatcher $events, ThreadRepository $threads, Censor $censor, ThreadValidator $validator, ThreadVideoRepository $threadVideos, BusDispatcher $bus)
     {
         $this->events = $events;
 
@@ -84,14 +84,14 @@ class EditThread
         $thread = $threads->findOrFail($this->threadId, $this->actor);
 
         if (isset($attributes['title'])) {
-            $this->assertCan($this->actor, 'rename', $thread);
+            $this->assertCan($this->actor, 'edit', $thread);
 
             // 敏感词校验
             $title = $censor->checkText($attributes['title']);
 
             // 存在审核敏感词时，将主题放入待审核
             if ($censor->isMod) {
-                $thread->is_approved = 0;
+                $thread->is_approved = Thread::UNAPPROVED;
             }
 
             $thread->title = $title;
@@ -100,11 +100,17 @@ class EditThread
             $thread->timestamps = false;
         }
 
-        //长文、视频可以修改价格
-        if (isset($attributes['price']) && ($thread->type != 0)) {
-            $this->assertCan($this->actor, 'editPrice', $thread);
+        // 非文字贴可设置价格
+        if (isset($attributes['price']) && $thread->type !== Thread::TYPE_OF_TEXT) {
+            $this->assertCan($this->actor, 'edit', $thread);
 
             $thread->price = (float) $attributes['price'];
+        }
+
+        if ($thread->price > 0 && isset($attributes['free_words'])) {
+            $this->assertCan($this->actor, 'edit', $thread);
+
+            $thread->free_words = (int) $attributes['free_words'];
         }
 
         if (isset($attributes['isApproved']) && $attributes['isApproved'] < 3) {
@@ -167,9 +173,6 @@ class EditThread
             }
         }
 
-        // 原分类ID
-        $cateId = $thread->category_id;
-
         $this->events->dispatch(
             new Saving($thread, $this->actor, $this->data)
         );
@@ -186,34 +189,30 @@ class EditThread
         $validator->valid($validAttr);
 
         //编辑视频
-        if ($thread->type == 2 && $file_id) {
+        if ($thread->type == Thread::TYPE_OF_VIDEO && $file_id) {
+            /** @var ThreadVideo $threadVideo */
             $threadVideo = $threadVideos->findOrFailByThreadId($thread->id);
+
             if ($threadVideo->file_id != $attributes['file_id']) {
-                $threadVideo->file_name = $attributes['file_name'];
-                $threadVideo->file_id = $attributes['file_id'];
-                $threadVideo->status = ThreadVideo::VIDEO_STATUS_TRANSCODING;
-                $threadVideo->media_url = '';
-                $threadVideo->cover_url = '';
+                // 将旧的视频主题 id 设为 0
+                $threadVideo->thread_id = 0;
                 $threadVideo->save();
 
-                //重新上传视频修改为审核状态
-                $thread->is_approved = 0;
+                // 创建新的视频记录
+                $video = $bus->dispatch(
+                    new CreateThreadVideo($this->actor, $thread, $this->data)
+                );
+
+                $thread->setRelation('threadVideo', $video);
+
+                // 重新上传视频修改为审核状态
+                $thread->is_approved = Thread::UNAPPROVED;
             }
         }
 
         $thread->save();
 
         $this->dispatchEventsFor($thread, $this->actor);
-
-        /**
-         * 更改统计数
-         */
-        $this->events->dispatch(
-            new UserRefreshCount($thread->user)
-        );
-        $this->events->dispatch(
-            new CategoryRefreshCount($thread->category, $cateId)
-        );
 
         return $thread;
     }

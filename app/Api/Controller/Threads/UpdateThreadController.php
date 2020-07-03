@@ -22,12 +22,22 @@ class UpdateThreadController extends AbstractCreateController
      */
     public $serializer = ThreadSerializer::class;
 
-    public $include = ['threadVideo'];
+    /**
+     * {@inheritdoc}
+     */
+    public $include = [
+        'user',
+        'firstPost',
+        'threadVideo',
+    ];
 
     /**
      * {@inheritdoc}
      */
-    public $optionalInclude = ['logs'];
+    public $optionalInclude = [
+        'firstPost.images',
+        'logs',
+    ];
 
     /**
      * @var Dispatcher

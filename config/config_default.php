@@ -9,7 +9,6 @@ return [
     'timezone' => 'Asia/Shanghai',
     'key' => 'base64:JtNRiS14Mopb+HNi3ztxi6259im9DTDBJXOzLDbcquw=',
     'cipher' => 'AES-256-CBC',
-    'site_url' => 'DummySiteUrl',
     'database' =>
         [
             'driver' => 'mysql',
@@ -141,6 +140,7 @@ return [
         App\Formatter\FormatterServiceProvider::class,
         App\Passport\Oauth2ServiceProvider::class,
         App\Providers\AppServiceProvider::class,
+        App\Providers\AttachmentServiceProvider::class,
         App\Providers\CategoryServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\OrderServiceProvider::class,
@@ -148,6 +148,7 @@ return [
         App\Providers\SettingsServiceProvider::class,
         App\Providers\ThreadServiceProvider::class,
         App\Providers\UserServiceProvider::class,
+        App\Providers\DialogMessageServiceProvider::class,
     ],
     'sms' => [
         // HTTP 请求的超时时间（秒）
@@ -175,5 +176,22 @@ return [
             ],
         ],
     ],
+
+    'cross' => [
+        'status' => true,//如果为true则在响应中加入headers
+
+        'headers' => [
+            'Access-Control-Allow-Origin' => [
+                //设置允许跨域，默认包含本站site_url
+            ],
+            'Access-Control-Allow-Headers' => 'Origin, Content-Type, Cookie, X-CSRF-TOKEN, Accept, Authorization, X-XSRF-TOKEN',
+            'Access-Control-Expose-Headers' => 'Authorization, authenticated',
+            'Access-Control-Allow-Methods' => 'GET, POST, PATCH, PUT, OPTIONS, DELETE',
+            'Access-Control-Allow-Credentials' => 'true'
+
+        ]
+    ],
+
     "paraparty" => include "paraparty.php"
+
 ];
