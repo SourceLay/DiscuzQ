@@ -118,8 +118,6 @@ class UserValidator extends AbstractValidator
         $rules = [
             'username' => [
                 'required',
-                'regex:/^[A-Za-z0-9_\x{4e00}-\x{9fa5}]+$/u',
-                'min:2',
                 'max:15',
                 'unique:users'
             ],
@@ -132,6 +130,7 @@ class UserValidator extends AbstractValidator
                 'regex:/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/',
             ],
             'realname' => 'required',
+            'register_reason' => 'filled|max:50',
         ];
 
         if ($this->user) {

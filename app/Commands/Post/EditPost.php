@@ -13,6 +13,7 @@ use App\Events\Post\Saved;
 use App\Events\Post\Saving;
 use App\Models\Post;
 use App\Models\PostMod;
+use App\Models\Thread;
 use App\Models\User;
 use App\Repositories\PostRepository;
 use App\Validators\PostValidator;
@@ -85,8 +86,8 @@ class EditPost
             $content = $censor->checkText($attributes['content']);
 
             // 存在审核敏感词时，将主题放入待审核
-            if ($censor->isMod && $post->is_first != 1) {
-                $post->is_approved = 0;
+            if ($censor->isMod) {
+                $post->is_approved = Post::UNAPPROVED;
             }
 
             $post->revise($content, $this->actor);
@@ -97,7 +98,7 @@ class EditPost
 
         if (isset($attributes['isApproved'])) {
             $this->assertCan($this->actor, 'approve', $post);
-            $message = isset($attributes['message']) ? $attributes['message'] : '';
+            $message = $attributes['message'] ?? '';
             $post->is_approved = $attributes['isApproved'];
 
             // 操作审核时触发 回复内容通知和记录日志
@@ -111,7 +112,7 @@ class EditPost
         if (isset($attributes['isDeleted'])) {
             $this->assertCan($this->actor, 'hide', $post);
 
-            $message = isset($attributes['message']) ? $attributes['message'] : '';
+            $message = $attributes['message'] ?? '';
 
             if ($attributes['isDeleted']) {
                 $post->hide($this->actor, ['message' => $message]);
@@ -126,23 +127,29 @@ class EditPost
 
         $validator->valid($post->getDirty());
 
-        // 记录触发的审核词
-        if ($post->is_approved == 0 && $censor->wordMod) {
-            $stopWords = PostMod::firstOrNew(['post_id' => $post->id]);
-            $stopWords->stop_word = implode(',', array_unique($censor->wordMod));
+        // 待审核帖子
+        if ($post->is_approved === Post::UNAPPROVED) {
+            // 记录触发的审核词
+            if ($censor->wordMod) {
+                /** @var PostMod $stopWords */
+                $stopWords = PostMod::query()->firstOrNew(['post_id' => $post->id]);
 
-            $post->stopWords()->save($stopWords);
+                $stopWords->stop_word = implode(',', array_unique($censor->wordMod));
+
+                $post->stopWords()->save($stopWords);
+            }
 
             // 如果是首贴，将主题放入待审核
             if ($post->is_first) {
-                $post->thread->is_approved = 0;
+                $post->thread->is_approved = Thread::UNAPPROVED;
+
                 $post->thread->save();
             }
         }
 
         $post->save();
 
-        $post->raise(new Saved($post, $this->actor, $this->data));
+        $post->raise(new Saved($post, $this->actor, array_merge($this->data, ['edit' => true])));
 
         $this->dispatchEventsFor($post, $this->actor);
 

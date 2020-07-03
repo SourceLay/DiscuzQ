@@ -21,9 +21,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $type
  * @property string $color
  * @property string $icon
+ * @property int $default
+ * @property int $is_display
+ * @property int is_paid
+ * @property float fee
+ * @property int days
  * @property Collection $users
  * @property Collection $permissions
- * @property int default
  * @method truncate()
  * @method create(array $array)
  * @method insert(array $array)
@@ -32,7 +36,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Group extends Model
 {
-    use EventGeneratorTrait, ScopeVisibilityTrait;
+    use EventGeneratorTrait;
+    use ScopeVisibilityTrait;
 
     /**
      * The ID of the administrator group.
@@ -60,7 +65,17 @@ class Group extends Model
     const MEMBER_ID = 10;
 
     /**
-     * @var bool
+     * The ID of preset groups
+     */
+    const PRESET_GROUPS = [1, 5, 6, 7, 10];
+
+    /**
+     * The group need paid
+     */
+    const IS_PAID = 1;
+
+    /**
+     * {@inheritdoc}
      */
     public $timestamps = false;
 
@@ -69,12 +84,13 @@ class Group extends Model
      */
     protected $casts = [
         'default' => 'boolean',
+        'is_display' => 'boolean',
     ];
 
     /**
-     * @var array
+     * {@inheritdoc}
      */
-    protected $fillable = ['id', 'name', 'type', 'color', 'icon', 'default'];
+    protected $fillable = ['id', 'name', 'type', 'color', 'icon', 'default', 'is_paid', 'fee', 'days'];
 
     /**
      * {@inheritdoc}
@@ -89,6 +105,16 @@ class Group extends Model
     }
 
     /**
+     * Define the relationship with the group's users.
+     *
+     * @return BelongsToMany
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
+    }
+
+    /**
      * Define the relationship with the group's permissions.
      *
      * @return HasMany
@@ -99,10 +125,17 @@ class Group extends Model
     }
 
     /**
-     * @return BelongsToMany
+     * Check whether the group has a certain permission.
+     *
+     * @param string $permission
+     * @return bool
      */
-    public function users()
+    public function hasPermission($permission)
     {
-        return $this->belongsToMany(User::class);
+        if ($this->id == self::ADMINISTRATOR_ID) {
+            return true;
+        }
+
+        return $this->permissions->contains('permission', $permission);
     }
 }

@@ -7,6 +7,7 @@
 
 namespace App\Api\Controller\Threads;
 
+use App\Models\Order;
 use App\Models\Thread;
 use Discuz\Auth\AssertPermissionTrait;
 use Illuminate\Support\Arr;
@@ -52,7 +53,7 @@ class ListFavoritesController extends ListThreadsController
             'pageCount' => ceil($this->threadCount / $limit),
         ]);
 
-        Thread::setStateUser($actor);
+        Thread::setStateUser($actor, $threads);
 
         // 特殊关联：最新三条回复
         if (in_array('lastThreePosts', $include)) {
@@ -68,16 +69,11 @@ class ListFavoritesController extends ListThreadsController
         // 特殊关联：打赏的人
         if (in_array('rewardedUsers', $include)) {
             $rewardedLimit = Arr::get($filter, 'rewardedLimit', 10);
-            $threads = $this->loadRewardedUsers($threads, $rewardedLimit);
+            $threads = $this->loadRewardedUsers($threads, $rewardedLimit, Order::ORDER_TYPE_REWARD);
         }
 
         // 加载其他关联
         $threads->loadMissing($include);
-
-        // 处理付费主题内容
-        if (in_array('firstPost', $include) || in_array('threadVideo', $include)) {
-            $threads = $this->cutThreadContent($threads, $actor, $include);
-        }
 
         return $threads;
     }

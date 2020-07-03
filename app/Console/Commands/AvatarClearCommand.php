@@ -40,28 +40,27 @@ class AvatarClearCommand extends AbstractCommand
     {
         // test data
         // $array = [130, 344, 343, 342];
-        // $users = $this->user->HaveAvatar()->whereIn('id', $array)->get();
+        // $users = $this->user->hasAvatar()->whereIn('id', $array)->get();
 
-        $users = $this->user->HaveAvatar()->get();
+        $users = $this->user->hasAvatar()->get();
 
         $bar = $this->createProgressBar(count($users));
 
         $bar->start();
 
         $users->map(function ($user) use ($bar) {
-
             $img = $user->id . '.png';
 
             $nowAvatar = $user->getRawOriginal('avatar');
 
-            // 判断是否是cos地址
-            if (substr_count($nowAvatar, 'http') > 0) {
-                $res = $this->app->make(Factory::class)->disk('avatar')->delete($img);
-                $type = 'local';
-            } else {
+            // 判断是否是 Cos 地址（如果是 Cos 就删除本地文件，否则删除 Local 文件）
+            if (strpos($nowAvatar, '://') === false) {
                 $cosPath = 'public/avatar/' . $img;
                 $res = $this->app->make(Factory::class)->disk('avatar_cos')->delete($cosPath);
                 $type = 'cos';
+            } else {
+                $res = $this->app->make(Factory::class)->disk('avatar')->delete($img);
+                $type = 'local';
             }
 
             // 删除后输出

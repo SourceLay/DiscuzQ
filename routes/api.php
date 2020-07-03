@@ -35,8 +35,7 @@ $route->get('/forum', 'forum.settings', ApiController\Settings\ForumSettingsCont
 |--------------------------------------------------------------------------
 */
 
-$route->get('/signature', 'signature', ApiController\Qcloud\CreateSignatureController::class);
-$route->get('/offiaccount/jssdk', 'Wechat.offiaccount.jssdk', ApiController\Wechat\WechatOffiaccountJSSDKController::class);
+$route->get('/signature', 'signature', ApiController\Qcloud\CreateVodUploadSignatureController::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -58,7 +57,8 @@ $route->delete('/groups', 'groups.delete', ApiController\Group\DeleteGroupsContr
 |--------------------------------------------------------------------------
 */
 
-$route->post('/permission', 'permission.update', ApiController\GroupPermission\UpdateGroupPermissionController::class);
+$route->post('/permission', 'permission.update', ApiController\Permission\UpdateGroupPermissionController::class);
+$route->post('/permission/group', 'permission.group', ApiController\Permission\SetPermissionController::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -75,6 +75,7 @@ $route->post('/refresh-token', 'oauth2.refresh.token', ApiController\Oauth2\Refr
 | Oauth client
 |--------------------------------------------------------------------------
 */
+
 $route->get('/oauth/wechat', 'wechat.login', ApiController\Users\WechatLoginController::class);
 $route->get('/oauth/wechat/user', 'wechat.user', ApiController\Users\WechatUserController::class);
 $route->get('/oauth/wechat/pc', 'wechat.web.login', ApiController\Users\WechatWebLoginController::class);
@@ -84,7 +85,12 @@ $route->get('/oauth/wechat/web/user', 'wechat.web.user', ApiController\Users\Wec
 $route->get('/oauth/wechat/web/user/event', 'wechat.web.user.event', ApiController\Users\WechatWebUserLoginEventController::class);
 $route->post('/oauth/wechat/web/user/event', 'wechat.web.user.postevent', ApiController\Users\WechatWebUserLoginPostEventController::class);
 $route->get('/oauth/wechat/web/user/serach', 'wechat.web.user.search', ApiController\Users\WechatWebUserLoginSearchController::class);
-$route->get('/oauth/wechat/mini/program-code', 'wechat.mini.program.code', ApiController\Wechat\WechatMiniProgramCodeController::class);
+$route->post('/oauth/wechat/miniprogram', 'wechat.miniprogram.login', ApiController\Users\WechatMiniProgramLoginController::class);
+$route->get('/oauth/wechat/miniprogram/code', 'wechat.mini.program.code', ApiController\Wechat\WechatMiniProgramCodeController::class);
+$route->get('/oauth/wechat/qy', 'wechat.qy.login', ApiController\Users\WechatQyLoginController::class);
+$route->get('/oauth/wechat/qy/user', 'wechat.qy.user', ApiController\Users\WechatQyUserController::class);
+$route->get('/oauth/qq', 'qq.login', ApiController\Users\QQLoginController::class);
+$route->get('/oauth/qq/user', 'qq.user', ApiController\Users\QQUserController::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -102,6 +108,9 @@ $route->patch('/users', 'users.update', ApiController\Users\UpdateUsersControlle
 $route->delete('/users/{id}', 'user.delete', ApiController\Users\DeleteUserController::class);
 $route->delete('/users', 'users.delete', ApiController\Users\DeleteUsersController::class);
 $route->post('/users/{id}/avatar', 'user.upload.avatar', ApiController\Users\UploadAvatarController::class);
+$route->get('/users/{id}/deny', 'user.deny.list', ApiController\Users\ListDenyUserController::class);
+$route->post('/users/{id}/deny', 'user.deny', ApiController\Users\CreateDenyUserController::class);
+$route->delete('/users/{id}/deny', 'user.delete.deny', ApiController\Users\DeleteDenyUserController::class);
 $route->delete('/users/{id}/avatar', 'user.delete.avatar', ApiController\Users\DeleteAvatarController::class);
 $route->delete('/users/{id}/wechat', 'user.delete.wechat', ApiController\Users\UnbindWechatController::class);
 $route->get('/export/users', 'export.users', ApiController\Users\ExportUserController::class);
@@ -138,6 +147,7 @@ $route->delete('/categories/{id}', 'categories.delete', ApiController\Category\D
 $route->get('/favorites', 'favorites', ApiController\Threads\ListFavoritesController::class);
 $route->get('/threads', 'threads.index', ApiController\Threads\ListThreadsController::class);
 $route->get('/threads/share/{id}', 'threads.share', ApiController\Threads\ShareThreadController::class);
+$route->get('/threads/likes', 'threads.likes', ApiController\Threads\ListLikesController::class);
 $route->get('/threads/{id}', 'threads.resource', ApiController\Threads\ResourceThreadController::class);
 $route->post('/threads', 'threads.create', ApiController\Threads\CreateThreadController::class);
 $route->patch('/threads/batch', 'threads.batchUpdate', ApiController\Threads\BatchUpdateThreadsController::class);
@@ -145,6 +155,7 @@ $route->patch('/threads/{id}', 'threads.update', ApiController\Threads\UpdateThr
 $route->delete('/threads/batch/{ids}', 'threads.batchDelete', ApiController\Threads\BatchDeleteThreadsController::class);
 $route->delete('/threads/{id}', 'threads.delete', ApiController\Threads\DeleteThreadController::class);
 $route->post('/threads/notify/video', 'threads.notify.video', ApiController\Threads\Notify\ThreadVideoNotifyController::class);
+$route->post('/thread/video', 'threads.video', ApiController\Threads\CreateThreadVideoController::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -191,9 +202,9 @@ $route->delete('/attachments/{id}', 'attachments.delete', ApiController\Attachme
  |--------------------------------------------------------------------------
  */
 
-$route->get('/order/{order_sn}', 'order.resource', ApiController\Order\ResourceOrderController::class);
-$route->post('/order', 'order.create', ApiController\Order\CreateOrderController::class);
-$route->get('/order', 'order.list', ApiController\Order\ListOrdersController::class);
+$route->get('/orders/{order_sn}', 'orders.resource', ApiController\Order\ResourceOrderController::class);
+$route->post('/orders', 'orders.create', ApiController\Order\CreateOrderController::class);
+$route->get('/orders', 'orders.list', ApiController\Order\ListOrdersController::class);
 
 /*
  |--------------------------------------------------------------------------
@@ -247,6 +258,7 @@ $route->delete('/invite/{id}', 'invite.delete', ApiController\Invite\DeleteInvit
 | Emoji
 |--------------------------------------------------------------------------
 */
+
 $route->get('/emoji', 'emoji.list', ApiController\Emoji\ListEmojiController::class);
 
 /*
@@ -254,8 +266,10 @@ $route->get('/emoji', 'emoji.list', ApiController\Emoji\ListEmojiController::cla
 | Statistic
 |--------------------------------------------------------------------------
 */
+
 $route->get('/statistic/finance', 'statistic.finance', ApiController\Statistic\FinanceProfileController::class);
 $route->get('/statistic/financeChart', 'statistic.financeChart', ApiController\Statistic\FinanceChartController::class);
+$route->post('/statistic/miniprogram', 'statistic.miniProgramStat', ApiController\Statistic\MiniProgramStatController::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -266,3 +280,75 @@ $route->get('/statistic/financeChart', 'statistic.financeChart', ApiController\S
 $route->post('/follow', 'follow.create', ApiController\Users\CreateUserFollowController::class);
 $route->get('/follow', 'follow.list', ApiController\Users\ListUserFollowController::class);
 $route->delete('/follow', 'follow.delete', ApiController\Users\DeleteUserFollowController::class);
+$route->delete('/follow/{id}/{type}', 'follow.delete.type', ApiController\Users\DeleteUserFollowByTypeController::class);
+
+/*
+|--------------------------------------------------------------------------
+| Dialog
+|--------------------------------------------------------------------------
+*/
+
+$route->post('/dialog', 'dialog.create', ApiController\Dialog\CreateDialogController::class);
+$route->post('/dialog/batch', 'dialog.batchCreate', ApiController\Dialog\BatchCreateDialogController::class);
+$route->get('/dialog', 'dialog.list', ApiController\Dialog\ListDialogController::class);
+$route->post('/dialog/message', 'dialog.message.create', ApiController\Dialog\CreateDialogMessageController::class);
+$route->get('/dialog/message', 'dialog.message.list', ApiController\Dialog\ListDialogMessageController::class);
+
+/*
+|--------------------------------------------------------------------------
+| Reports
+|--------------------------------------------------------------------------
+*/
+
+$route->post('/reports', 'reports.create', ApiController\Report\CreateReportsController::class);
+$route->get('/reports', 'reports.list', ApiController\Report\ListReportsController::class);
+$route->patch('/reports/batch', 'reports.batchUpdate', ApiController\Report\BatchUpdateReportsController::class);
+$route->delete('/reports/batch/{ids}', 'reports.batchDelete', ApiController\Report\BatchDeleteReportsController::class);
+
+/*
+|--------------------------------------------------------------------------
+| Analysis
+|--------------------------------------------------------------------------
+*/
+
+$route->get('/analysis/goods', 'analysis.goods.url', ApiController\Analysis\ResourceAnalysisGoodsController::class);
+
+/*
+|--------------------------------------------------------------------------
+| Topic
+|--------------------------------------------------------------------------
+*/
+
+$route->get('/topics', 'topics.list', ApiController\Topic\ListTopicController::class);
+$route->get('/topics/{id}', 'topics.resource', ApiController\Topic\ResourceTopicController::class);
+$route->delete('/topics/{id}', 'topics.delete', ApiController\Topic\DeleteTopicController::class);
+$route->delete('/topics/batch/{ids}', 'topics.batchDelete', ApiController\Topic\BatchDeleteTopicController::class);
+
+/*
+|--------------------------------------------------------------------------
+| System
+|--------------------------------------------------------------------------
+*/
+
+$route->get('/system/command', 'system.command', ApiController\System\CallCommandController::class);
+
+/*
+|--------------------------------------------------------------------------
+| Wechat - Offiaccount
+|--------------------------------------------------------------------------
+*/
+
+$route->get('/offiaccount/server', 'offiaccount.server', ApiController\Wechat\OffIAccountServerController::class);
+$route->post('/offiaccount/server', 'offiaccount.server', ApiController\Wechat\OffIAccountServerController::class);
+$route->get('/offiaccount/jssdk', 'offiaccount.jssdk', ApiController\Wechat\OffIAccountJSSDKController::class);
+$route->get('/offiaccount/asset', 'offiaccount.asset.list', ApiController\Wechat\OffIAccountAssetListController::class);
+$route->get('/offiaccount/asset/{media_id}', 'offiaccount.asset.resource', ApiController\Wechat\OffIAccountAssetResourceController::class);
+$route->post('/offiaccount/asset', 'offiaccount.asset.upload', ApiController\Wechat\OffIAccountAssetUploadController::class);
+$route->patch('/offiaccount/asset', 'offiaccount.asset.update', ApiController\Wechat\OffIAccountAssetUpdateController::class);
+$route->delete('/offiaccount/asset/{media_id}', 'offiaccount.asset.delete', ApiController\Wechat\OffIAccountAssetDeleteController::class);
+$route->get('/offiaccount/reply', 'offiaccount.reply.list', ApiController\Wechat\OffIAccountReplyListController::class);
+$route->post('/offiaccount/reply', 'offiaccount.reply.create', ApiController\Wechat\OffIAccountReplyCreateController::class);
+$route->get('/offiaccount/reply/{id}', 'offiaccount.reply.resource', ApiController\Wechat\OffIAccountReplyResourceController::class);
+$route->delete('/offiaccount/reply/{id}', 'offiaccount.reply.delete', ApiController\Wechat\OffIAccountReplyDeleteController::class);
+$route->get('/offiaccount/menu', 'offiaccount.menu.list', ApiController\Wechat\OffIAccountMenuListController::class);
+$route->post('/offiaccount/menu', 'offiaccount.menu.batchCreate', ApiController\Wechat\OffIAccountMenuBatchCreateController::class);

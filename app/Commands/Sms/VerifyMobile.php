@@ -11,6 +11,8 @@ use App\Api\Controller\Mobile\VerifyController;
 use App\Api\Serializer\TokenSerializer;
 use App\Api\Serializer\UserSerializer;
 use App\Commands\Users\GenJwtToken;
+use App\Commands\Users\RegisterPhoneUser;
+use App\Events\Users\Logind;
 use App\Models\MobileCode;
 use App\Models\User;
 use App\Models\UserWalletFailLogs;
@@ -18,12 +20,17 @@ use App\Repositories\MobileCodeRepository;
 use App\Validators\UserValidator;
 use Discuz\Api\Client;
 use Discuz\Auth\Exception\PermissionDeniedException;
+use Discuz\Foundation\EventsDispatchTrait;
 use Illuminate\Contracts\Bus\Dispatcher;
+use Illuminate\Contracts\Events\Dispatcher as Events;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class VerifyMobile
 {
+    use EventsDispatchTrait;
+
     protected $controller;
 
     protected $mobileCode;
@@ -40,6 +47,8 @@ class VerifyMobile
 
     protected $mobileCodeRepository;
 
+    protected $events;
+
     public function __construct(VerifyController $controller, MobileCode $mobileCode, User $actor, $params = [])
     {
         $this->controller = $controller;
@@ -48,13 +57,13 @@ class VerifyMobile
         $this->params = $params;
     }
 
-    public function handle(Client $apiClient, Dispatcher $bus, UserValidator $validator, MobileCodeRepository $mobileCodeRepository)
+    public function handle(Client $apiClient, Dispatcher $bus, UserValidator $validator, MobileCodeRepository $mobileCodeRepository, Events $events)
     {
         $this->apiClient = $apiClient;
         $this->bus = $bus;
         $this->validator = $validator;
         $this->mobileCodeRepository = $mobileCodeRepository;
-
+        $this->events = $events;
         return call_user_func([$this, Str::camel($this->mobileCode->type)]);
     }
 
@@ -64,21 +73,33 @@ class VerifyMobile
      */
     protected function login()
     {
-        if (!is_null($this->mobileCode->user)) {
-            $this->controller->serializer = TokenSerializer::class;
-            $params = [
-                'username' => $this->mobileCode->user->username,
-                'password' => ''
-            ];
-
-            $response = $this->bus->dispatch(
-                new GenJwtToken($params)
+        //register new user
+        if (is_null($this->mobileCode->user)) {
+            $data['register_ip'] = Arr::get($this->params, 'ip');
+            $data['register_port'] = Arr::get($this->params, 'port');
+            $data['mobile'] = $this->mobileCode->mobile;
+            $user = $this->bus->dispatch(
+                new RegisterPhoneUser($this->actor, $data)
             );
-
-            return json_decode($response->getBody());
+            $this->mobileCode->setRelation('user', $user);
         }
 
-        throw new PermissionDeniedException;
+        $this->events->dispatch(
+            new Logind($this->mobileCode->user)
+        );
+        //login
+        $this->controller->serializer = TokenSerializer::class;
+        $params = [
+            'username' => $this->mobileCode->user->username,
+            'password' => ''
+        ];
+
+        $response = $this->bus->dispatch(
+            new GenJwtToken($params)
+        );
+
+        return json_decode($response->getBody());
+
     }
 
     protected function bind()

@@ -14,7 +14,6 @@ use App\Events\Users\Logind;
 use App\Exceptions\NoUserException;
 use App\Models\SessionToken;
 use App\Models\UserWechat;
-use App\Passport\Repositories\UserRepository;
 use Discuz\Api\Controller\AbstractResourceController;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Contracts\Cache\Repository;
@@ -94,7 +93,7 @@ abstract class AbstractWechatUserController extends AbstractResourceController
                 new GenJwtToken($params)
             );
 
-            if($response->getStatusCode() === 200) {
+            if ($response->getStatusCode() === 200) {
                 $this->events->dispatch(new Logind($wechatUser->user));
             }
 
@@ -141,7 +140,7 @@ abstract class AbstractWechatUserController extends AbstractResourceController
 
     protected function fixData($rawUser, $actor)
     {
-        $data = array_merge($rawUser, ['user_id' => $actor->id, $this->getType() => $rawUser['openid']]);
+        $data = array_merge($rawUser, ['user_id' => $actor->id ?: null, $this->getType() => $rawUser['openid']]);
         unset($data['openid'], $data['language']);
         $data['privilege'] = serialize($data['privilege']);
         return $data;

@@ -13,7 +13,6 @@ export default {
       pageIndex: 1,//页码
       pageLimit: 20,
       offset: 100, //滚动条与底部距离小于 offset 时触发load事件
-      thread: false,
       themeCon: [],
       limitList: '',
       allowRegister: '',
@@ -187,8 +186,12 @@ export default {
         method: 'post',
         splice: '/' + this.orderSn,
         data: {
-          "payment_type": type,
-          'pay_password': value
+          data: {
+            attributes: {
+              "payment_type": type,
+              'pay_password': value
+            }
+          }
         }
       }).then(res => {
         if (res.errors) {
@@ -406,7 +409,7 @@ export default {
                 }
                 this.getUsersInfo()
               }, 3000)
-            }            
+            }
 
           })
         })

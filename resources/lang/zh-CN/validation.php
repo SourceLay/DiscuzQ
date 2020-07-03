@@ -121,6 +121,8 @@ return [
     'session_token'        => '令牌已失效。',
     'wrong'                => ':attribute 错误。',
     'qcloud_vod'           => '未开启腾讯云 云点播 服务。',
+    'publishNeedRealName'  => '发布内容需先实名认证。',
+    'publishNeedBindPhone' => '发布内容需先绑定手机。',
 
     /*
     |--------------------------------------------------------------------------
@@ -199,6 +201,12 @@ return [
         'cash_sum_limit'        => '每日提现总金额上限',
         'cash_apply_amount'     => '提现金额',
 
+        // settings - watermark 水印设置
+        'watermark'             => '水印开关',
+        'position'              => '水印位置',
+        'horizontal_spacing'    => '水印水平边距',
+        'vertical_spacing'      => '水印垂直边距',
+
         // sms
         'sms_code'              => '验证码',
         'sms_type' => '验证码类型',
@@ -207,6 +215,8 @@ return [
         'pay_password' => '支付密码',
         'pay_password_confirmation' => '支付密码',
         'groupId' => '用户组',
+        'username_prefix' => '网友',
+        'register_reason' => '注册原因',
 
         // thread
         'file_id' => '视频文件',
@@ -214,6 +224,14 @@ return [
         'price' => '价格',
         'captcha' => '验证码',
         'type' => '类型',
+
+        //NotificationTpl
+        'template_id' => '模板ID',
+
+        //会话 会话消息
+        'dialog_id' => '会话',
+        'message_text' => '消息内容',
+        'attachment_id' => '附件',
 
     ],
 ];

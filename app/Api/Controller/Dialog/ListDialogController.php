@@ -15,6 +15,7 @@ use Discuz\Auth\AssertPermissionTrait;
 use Discuz\Auth\Exception\NotAuthenticatedException;
 use Discuz\Http\UrlGenerator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
 use Tobscure\JsonApi\Exception\InvalidParameterException;
@@ -43,10 +44,14 @@ class ListDialogController extends AbstractListController
      */
     public $dialogCount;
 
+    public $sortFields = [
+        'dialogMessageId',
+        'createdAt',
+    ];
     /**
      * {@inheritdoc}
      */
-    public $optionalInclude = ['sender','recipient','dialogMessage'];
+    public $optionalInclude = ['sender','recipient','dialogMessage','sender.groups','recipient.groups'];
 
     /* The relationships that are included by default.
      *
@@ -76,11 +81,12 @@ class ListDialogController extends AbstractListController
 
         $this->assertRegistered($actor);
 
-        $filter = $this->extractFilter($request);
         $limit = $this->extractLimit($request);
         $offset = $this->extractOffset($request);
+        $include = $this->extractInclude($request);
+        $sort = $this->extractSort($request);
 
-        $userFollow = $this->search($actor, $filter, $limit, $offset);
+        $dialogs = $this->search($actor, $sort, $limit, $offset);
 
         $document->addPaginationLinks(
             $this->url->route('dialog.list'),
@@ -90,22 +96,24 @@ class ListDialogController extends AbstractListController
             $this->dialogCount
         );
 
+        $dialogs->loadMissing($include);
+
         $document->setMeta([
             'total' => $this->dialogCount,
             'pageCount' => ceil($this->dialogCount / $limit),
         ]);
 
-        return $userFollow;
+        return $dialogs;
     }
 
     /**
      * @param User $actor
-     * @param array $filter
      * @param null $limit
      * @param int $offset
+     * @param $sort
      * @return Collection
      */
-    public function search(User $actor, $filter, $limit = null, $offset = 0)
+    public function search(User $actor, $sort, $limit = null, $offset = 0)
     {
         $query = $this->dialog->query();
 
@@ -116,6 +124,9 @@ class ListDialogController extends AbstractListController
 
         $query->skip($offset)->take($limit);
 
+        foreach ((array) $sort as $field => $order) {
+            $query->orderBy(Str::snake($field), $order);
+        }
         return $query->get();
     }
 }

@@ -13,13 +13,17 @@ use App\Events\Post\Revised;
 use App\Formatter\Formatter;
 use App\Formatter\MarkdownFormatter;
 use Carbon\Carbon;
-use Discuz\Foundation\EventGeneratorTrait;
+use DateTime;
 use Discuz\Database\ScopeVisibilityTrait;
+use Discuz\Foundation\EventGeneratorTrait;
+use Discuz\SpecialChar\SpecialCharServer;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -27,10 +31,15 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $thread_id
  * @property int $reply_post_id
  * @property int $reply_user_id
+ * @property string $summary
+ * @property string $summary_text
  * @property string $content
  * @property string $ip
+ * @property int $port
  * @property int $reply_count
  * @property int $like_count
+ * @property float $longitude
+ * @property float $latitude
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon $deleted_at
@@ -38,11 +47,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property bool $is_first
  * @property bool $is_comment
  * @property bool $is_approved
+ * @property Collection $images
  * @property Thread $thread
  * @property User $user
  * @property User $replyUser
  * @property User $deletedUser
  * @property PostMod $stopWords
+ * @property Post replyPost
+ * @property string parsedContent
  * @package App\Models
  */
 class Post extends Model
@@ -51,10 +63,19 @@ class Post extends Model
     use ScopeVisibilityTrait;
 
     /**
-     * 摘要长度（多字节字符通常是单字节字符的两倍宽度）
-     * https://www.php.net/manual/zh/function.mb-strwidth.php
+     * 摘要长度
      */
-    const SUMMARY_LENGTH = 200;
+    const SUMMARY_LENGTH = 80;
+
+    /**
+     * 摘要结尾
+     */
+    const SUMMARY_END_WITH = '...';
+
+    /**
+     * 通知内容展示长度(字)
+     */
+    const NOTICE_LENGTH = 80;
 
     const UNAPPROVED = 0;
 
@@ -66,6 +87,8 @@ class Post extends Model
      * {@inheritdoc}
      */
     protected $casts = [
+        'reply_count' => 'integer',
+        'like_count' => 'integer',
         'is_first' => 'boolean',
         'is_comment' => 'boolean',
     ];
@@ -101,6 +124,52 @@ class Post extends Model
     protected static $markdownFormatter;
 
     /**
+     * datetime 时间转换
+     *
+     * @param $timeAt
+     * @return string
+     */
+    public function formatDate($timeAt)
+    {
+        return $this->{$timeAt}->format(DateTime::RFC3339);
+    }
+
+    /**
+     * 帖子摘要
+     *
+     * @return string
+     */
+    public function getSummaryAttribute()
+    {
+        $content = Str::of($this->content ?: '');
+
+        if ($content->length() > self::SUMMARY_LENGTH) {
+            $content = static::$formatter->parse(
+                $content->substr(0, self::SUMMARY_LENGTH)->finish(self::SUMMARY_END_WITH)
+            );
+            $content = static::$formatter->render($content);
+        } else {
+            $content = $this->formatContent();
+        }
+
+        return str_replace('<br>', '', $content);
+    }
+
+    /**
+     * 帖子纯文本摘要
+     *
+     * @return string
+     */
+    public function getSummaryTextAttribute()
+    {
+        $content = strip_tags($this->formatContent());
+
+        return $content
+            ? Str::of($content)->substr(0, self::SUMMARY_LENGTH)->finish(self::SUMMARY_END_WITH)->__toString()
+            : '';
+    }
+
+    /**
      * Unparse the parsed content.
      *
      * @param string $value
@@ -108,7 +177,7 @@ class Post extends Model
      */
     public function getContentAttribute($value)
     {
-        if ($this->is_first && $this->thread->type == 1) {
+        if ($this->is_first && $this->thread->type === Thread::TYPE_OF_LONG) {
             return static::$markdownFormatter->unparse($value);
         } else {
             return static::$formatter->unparse($value);
@@ -132,10 +201,10 @@ class Post extends Model
      */
     public function setContentAttribute($value)
     {
-        if ($this->is_first && ($this->thread->type ==1)) {
-            $this->attributes['content'] = $value ? static::$markdownFormatter->parse($value, $this) : null;
+        if ($this->is_first && $this->thread->type === Thread::TYPE_OF_LONG) {
+            $this->attributes['content'] = strlen($value) ? static::$markdownFormatter->parse($value, $this) : null;
         } else {
-            $this->attributes['content'] = $value ? static::$formatter->parse($value, $this) : null;
+            $this->attributes['content'] = strlen($value) ? static::$formatter->parse($value, $this) : null;
         }
     }
 
@@ -158,7 +227,7 @@ class Post extends Model
     {
         $content = $this->attributes['content'] ?: '';
 
-        if ($this->is_first && ($this->thread->type ==1)) {
+        if ($this->is_first && $this->thread->type === Thread::TYPE_OF_LONG) {
             $content = $content ? static::$markdownFormatter->render($content) : '';
         } else {
             $content = $content ? static::$formatter->render($content) : '';
@@ -168,19 +237,87 @@ class Post extends Model
     }
 
     /**
+     * 获取 Content & firstContent
+     *
+     * @param int $substr
+     * @return array
+     */
+    public function getSummaryContent($substr = 0)
+    {
+        $special = app()->make(SpecialCharServer::class);
+
+        $build = [
+            'content' => '',
+            'first_content' => '',
+        ];
+
+        /**
+         * 判断是否是楼中楼的回复
+         */
+        if ($this->reply_post_id) {
+            $this->content = $substr ? Str::of($this->content)->substr(0, $substr) : $this->content;
+            $content = $this->formatContent();
+        } else {
+            /**
+             * 判断长文点赞通知内容为标题
+             */
+            if ($this->thread->type === Thread::TYPE_OF_LONG) {
+                $content = $this->thread->getContentByType(self::NOTICE_LENGTH);
+            } else {
+                // 引用回复去除引用部分
+                $this->filterPostContent();
+
+                $this->content = $substr ? Str::of($this->content)->substr(0, $substr) : $this->content;
+                $content = $this->formatContent();
+
+                // 如果是首贴 firstContent === content 内容一样
+                if ($this->is_first) {
+                    $firstContent = $content;
+                } else {
+                    $firstContent = $this->thread->getContentByType(self::NOTICE_LENGTH);
+                }
+            }
+        }
+
+        $build['content'] = $content;
+        $build['first_content'] = $firstContent ?? $special->purify($this->thread->getContentByType());
+
+        return $build;
+    }
+
+    /**
+     * 引用回复去除引用部分
+     *
+     * @param int $substr
+     */
+    public function filterPostContent($substr = 0)
+    {
+        // 引用回复去除引用部分
+        $pattern = '/<blockquote class="quoteCon">.*<\/blockquote>/';
+        $this->content = preg_replace($pattern, '', $this->content);
+
+        if ($substr) {
+            $this->content = Str::of($this->content)->substr(0, $substr);
+        }
+    }
+
+    /**
      * Create a new instance in reply to a thread.
      *
      * @param int $threadId
      * @param string $content
      * @param int $userId
      * @param string $ip
+     * @param int $port
      * @param int $replyPostId
      * @param int $replyUserId
      * @param int $isFirst
      * @param int $isComment
+     * @param float $latitude
+     * @param float $longitude
      * @return static
      */
-    public static function reply($threadId, $content, $userId, $ip, $replyPostId, $replyUserId, $isFirst, $isComment)
+    public static function reply($threadId, $content, $userId, $ip, $port, $replyPostId, $replyUserId, $isFirst, $isComment, $latitude, $longitude)
     {
         $post = new static;
 
@@ -188,11 +325,13 @@ class Post extends Model
         $post->thread_id = $threadId;
         $post->user_id = $userId;
         $post->ip = $ip;
-        $post->reply_post_id = $replyPostId;
+        $post->port = $port;
         $post->reply_post_id = $replyPostId;
         $post->reply_user_id = $replyUserId;
         $post->is_first = $isFirst;
         $post->is_comment = $isComment;
+        $post->latitude = $latitude;
+        $post->longitude = $longitude;
 
         // Set content last, as the parsing may rely on other post attributes.
         $post->content = $content;
@@ -275,9 +414,11 @@ class Post extends Model
      */
     public function refreshReplyCount()
     {
-        $this->reply_count = $this->where('reply_post_id', $this->id)
+        $this->reply_count = $this->newQuery()
+            ->where('reply_post_id', $this->id)
             ->where('is_approved', Thread::APPROVED)
             ->whereNull('deleted_at')
+            ->whereNotNull('user_id')
             ->count();
 
         return $this;
@@ -314,6 +455,16 @@ class Post extends Model
     }
 
     /**
+     * Define the relationship with the post's content post.
+     *
+     * @return BelongsTo
+     */
+    public function replyPost()
+    {
+        return $this->belongsTo(Post::class, 'reply_post_id');
+    }
+
+    /**
      * Define the relationship with the user who hid the post.
      *
      * @return BelongsTo
@@ -328,7 +479,7 @@ class Post extends Model
      */
     public function logs()
     {
-        return $this->morphMany(OperationLog::class, 'log_able');
+        return $this->morphMany(UserActionLogs::class, 'log_able');
     }
 
     /**
@@ -360,7 +511,7 @@ class Post extends Model
      */
     public function images()
     {
-        return $this->hasMany(Attachment::class)->where('is_gallery', true)->orderBy('order');
+        return $this->hasMany(Attachment::class, 'type_id')->where('type', Attachment::TYPE_OF_IMAGE)->orderBy('order');
     }
 
     /**
@@ -370,7 +521,7 @@ class Post extends Model
      */
     public function attachments()
     {
-        return $this->hasMany(Attachment::class)->where('is_gallery', false)->orderBy('order');
+        return $this->hasMany(Attachment::class, 'type_id')->where('type', Attachment::TYPE_OF_FILE)->orderBy('order');
     }
 
     /**
@@ -384,6 +535,11 @@ class Post extends Model
         $user = $user ?: static::$stateUser;
 
         return $this->hasOne(PostUser::class)->where('user_id', $user ? $user->id : null);
+    }
+
+    public function mentionUsers()
+    {
+        return $this->belongsToMany(User::class, 'post_mentions_user', 'post_id', 'mentions_user_id');
     }
 
     /**
