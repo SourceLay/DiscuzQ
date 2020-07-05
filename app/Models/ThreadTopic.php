@@ -5,11 +5,17 @@
  * This is NOT a freeware, use is subject to license terms
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use s9e\TextFormatter\Utils;
+
+use App\Paraparty\Topics\Topics as ParapartyTopics;
 
 /**
  * Models a thread-topic state record in the database.
@@ -35,7 +41,11 @@ class ThreadTopic extends Pivot
     public static function setThreadTopic(Post $post)
     {
         if ($post->is_first) {
-            $topics = Utils::getAttributeValues($post->parsedContent, 'TOPIC', 'id');
+
+            // Eric Modified
+            // $topics = Utils::getAttributeValues($post->parsedContent, 'TOPIC', 'id');
+
+            $topics = ParapartyTopics::parser_topics($post);
 
             $post->thread->topic()->sync($topics);
 
