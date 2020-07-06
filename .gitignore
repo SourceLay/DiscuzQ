@@ -5,7 +5,6 @@
 /config/config.php
 /node_modules
 .php_cs.cache
-/public/admin.html
 /public/s9e.js
 /public/storage
 /storage/install.lock
