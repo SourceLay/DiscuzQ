@@ -1,3 +1,6 @@
 /assets
 /static
+/static-admin
 index.html
+admin.html
+pc.html
