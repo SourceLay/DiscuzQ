@@ -48,7 +48,7 @@ class PostListener
         $events->listen(Created::class, [$this, 'whenPostWasCreated']);
         $events->listen(Created::class, SaveAudioToDatabase::class);
 
-        // 操作审核回复，触发行为动作
+        // 审核回复
         $events->listen(PostWasApproved::class, [$this, 'whenPostWasApproved']);
 
         // 隐藏/还原回复
@@ -108,8 +108,8 @@ class PostListener
 
                 // 微信通知
                 $post->thread->user->notify(new Replied($post, $actor, WechatRepliedMessage::class, [
-                    'message' => $post->getSummaryContent(Post::NOTICE_LENGTH)['content'],
-                    'subject' => $post->getSummaryContent(Post::NOTICE_LENGTH)['first_content'],
+                    'message' => $post->getSummaryContent(Post::NOTICE_LENGTH, true)['content'],
+                    'subject' => $post->getSummaryContent(Post::NOTICE_LENGTH, true)['first_content'],
                     'raw' => array_merge(Arr::only($post->toArray(), ['id', 'thread_id', 'reply_post_id']), [
                         'actor_username' => $actor->username    // 发送人姓名
                     ]),
@@ -127,9 +127,10 @@ class PostListener
 
                 // 去掉回复引用
                 $post->replyPost->filterPostContent(Post::NOTICE_LENGTH);
+
                 // 微信通知
                 $post->replyUser->notify(new Replied($post, $actor, WechatRepliedMessage::class, [
-                    'message' => $post->getSummaryContent(Post::NOTICE_LENGTH)['content'],
+                    'message' => $post->getSummaryContent(Post::NOTICE_LENGTH, true)['content'],
                     'subject' => $post->replyPost->formatContent(), // 解析content
                     'raw' => array_merge(Arr::only($post->toArray(), ['id', 'thread_id', 'reply_post_id']), [
                         'actor_username' => $actor->username    // 发送人姓名
@@ -194,29 +195,28 @@ class PostListener
     }
 
     /**
-     * 操作审核回复时，触发行为动作
-     * 1. 记录操作
-     * 2. 触发通知(包括微信通知)
-     *
      * @param PostWasApproved $event
      */
     public function whenPostWasApproved(PostWasApproved $event)
     {
-        if ($event->post->is_approved == Thread::APPROVED) {
+        $post = $event->post;
+
+        if ($post->is_approved === Post::APPROVED) {
             // 审核通过时，清除记录的敏感词
-            PostMod::query()->where('post_id', $event->post->id)->delete();
+            PostMod::query()->where('post_id', $post->id)->delete();
 
             $action = 'approve';
-        } elseif ($event->post->is_approved == Thread::IGNORED) {
+        } elseif ($post->is_approved == Thread::IGNORED) {
             $action = 'ignore';
         } else {
             $action = 'disapprove';
         }
 
-        UserActionLogs::writeLog($event->actor, $event->post, $action, $event->data['message']);
+        // 通知
+        $this->postNotices($post, $event->actor, 'isApproved', $event->data['message'] ?? '');
 
-        // 发送审核通知
-        $this->postNotices('isApproved', $event);
+        // 日志
+        UserActionLogs::writeLog($event->actor, $post, $action, $event->data['message'] ?? '');
     }
 
     /**
@@ -234,11 +234,11 @@ class PostListener
             $post->thread->save();
         }
 
-        // 记录操作日志
-        UserActionLogs::writeLog($event->actor, $post, 'hide', $event->data['message']);
+        // 通知
+        $this->postNotices($post, $event->actor, 'isDeleted', $event->data['message'] ?? '');
 
-        // 发送删除通知
-        $this->postNotices('isDeleted', $event);
+        // 日志
+        UserActionLogs::writeLog($event->actor, $post, 'hide', $event->data['message'] ?? '');
     }
 
     /**
@@ -254,27 +254,6 @@ class PostListener
             $post->thread->deleted_at = null;
 
             $post->thread->save();
-        }
-    }
-
-    /**
-     * 发送通知
-     *
-     * @param $noticeType
-     * @param $event
-     */
-    public function postNotices($noticeType, $event)
-    {
-        // 触发通知 判断不是修改自己的主题 则发送通知
-        if ($event->post->user_id != $event->actor->id) {
-            switch ($noticeType) {
-                case 'isApproved':  // 内容审核通知
-                    $this->postisapproved($event->post, ['refuse' => $this->reasonValuePost($event->data)]);
-                    break;
-                case 'isDeleted':   // 内容删除通知
-                    $this->postIsDeleted($event->post, ['refuse' => $this->reasonValuePost($event->data)]);
-                    break;
-            }
         }
     }
 
@@ -328,32 +307,12 @@ class PostListener
      */
     public function userMentions(Saved $event)
     {
-        // 任何修改帖子行为 除了修改是否合法字段,其它都不允许发送@通知
-        $edit = Arr::get($event->data, 'edit', false);
+        $post = $event->post;
 
-        if ($edit) {
-            // 判断是否修改合法值
-            if (!Arr::has($event->data, 'attributes.isApproved')) {
-                return;
-            }
-            // 判断是否合法
-            if (Arr::get($event->data, 'attributes.isApproved') != Thread::APPROVED) {
-                return;
-            }
-        } else {
-            // 判断是否是合法的主题
-            if ($event->post->thread->is_approved != Thread::APPROVED) {
-                return;
-            }
-
-            // 判断是否是合法的回复
-            if ($event->post->is_approved != Post::APPROVED) {
-                return;
-            }
+        // 新建 或者 修改了是否合法字段 并且 合法时，发送 @ 通知
+        if (($post->wasRecentlyCreated || $post->wasChanged('is_approved')) && $post->is_approved === Post::APPROVED) {
+            $this->sendRelated($event->post, $event->post->user);
         }
-
-        // 发送@通知
-        $this->sendRelated($event->post, $event->post->user);
     }
 
     /**
