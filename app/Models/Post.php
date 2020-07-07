@@ -239,10 +239,11 @@ class Post extends Model
     /**
      * 获取 Content & firstContent
      *
-     * @param int $substr
-     * @return array
+     * @param $substr
+     * @param bool $parse
+     * @return string[]
      */
-    public function getSummaryContent($substr = 0)
+    public function getSummaryContent($substr, $parse = false)
     {
         $special = app()->make(SpecialCharServer::class);
 
@@ -256,31 +257,41 @@ class Post extends Model
          */
         if ($this->reply_post_id) {
             $this->content = $substr ? Str::of($this->content)->substr(0, $substr) : $this->content;
-            $content = $this->formatContent();
+            if ($parse) {
+                // 原文
+                $content = $this->content;
+            } else {
+                $content = $this->formatContent();
+            }
         } else {
             /**
              * 判断长文点赞通知内容为标题
              */
             if ($this->thread->type === Thread::TYPE_OF_LONG) {
-                $content = $this->thread->getContentByType(self::NOTICE_LENGTH);
+                $content = $this->thread->getContentByType(self::NOTICE_LENGTH, $parse);
             } else {
                 // 引用回复去除引用部分
                 $this->filterPostContent();
 
                 $this->content = $substr ? Str::of($this->content)->substr(0, $substr) : $this->content;
-                $content = $this->formatContent();
+                if ($parse) {
+                    // 原文
+                    $content = $this->content;
+                } else {
+                    $content = $this->formatContent();
+                }
 
                 // 如果是首贴 firstContent === content 内容一样
                 if ($this->is_first) {
                     $firstContent = $content;
                 } else {
-                    $firstContent = $this->thread->getContentByType(self::NOTICE_LENGTH);
+                    $firstContent = $this->thread->getContentByType(self::NOTICE_LENGTH, $parse);
                 }
             }
         }
 
         $build['content'] = $content;
-        $build['first_content'] = $firstContent ?? $special->purify($this->thread->getContentByType());
+        $build['first_content'] = $firstContent ?? $special->purify($this->thread->getContentByType(Thread::CONTENT_LENGTH, $parse));
 
         return $build;
     }
