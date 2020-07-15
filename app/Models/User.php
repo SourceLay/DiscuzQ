@@ -213,9 +213,15 @@ class User extends Model
         return $this;
     }
 
-    public function changeAvatar($path)
+    /**
+     * @param string $path
+     * @param bool $isRemote
+     * @return $this
+     */
+    public function changeAvatar($path, $isRemote = false)
     {
-        $this->avatar = $path;
+        $this->avatar = ($isRemote ? 'cos://' : '') . $path;
+        $this->avatar_at = $path ? Carbon::now() : null;
 
         return $this;
     }
@@ -550,7 +556,8 @@ class User extends Model
     {
         return $this->belongsToMany(Thread::class)
             ->as('favoriteState')
-            ->withPivot('created_at');
+            ->withPivot('created_at')
+            ->whereNotNull('threads.user_id');
     }
 
     /**
