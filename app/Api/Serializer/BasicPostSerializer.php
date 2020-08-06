@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Serializer;
 
 use App\Models\Post;
@@ -61,6 +65,7 @@ class BasicPostSerializer extends AbstractSerializer
 
         $attributes = [
             'replyUserId'       => $model->reply_user_id,
+            'replyPostId'       => $model->reply_post_id, // Eric Modified
             'summary'           => $model->summary,
             'summaryText'       => $model->summary_text,
             'content'           => $model->content,
