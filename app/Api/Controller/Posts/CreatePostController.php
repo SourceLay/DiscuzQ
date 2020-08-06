@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Controller\Posts;
 
 use App\Api\Serializer\CommentPostSerializer;
@@ -67,7 +71,9 @@ class CreatePostController extends AbstractCreateController
         $ip = ip($request->getServerParams());
         $port = Arr::get($request->getServerParams(), 'REMOTE_PORT');
 
-        $isComment = (bool) Arr::get($data, 'attributes.isComment');
+        // Eric Modified
+        // $isComment = (bool) Arr::get($data, 'attributes.isComment');
+        $isComment = false;
 
         if ($isComment) {
             $this->serializer = CommentPostSerializer::class;
