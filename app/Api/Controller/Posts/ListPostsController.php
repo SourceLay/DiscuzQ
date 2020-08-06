@@ -65,6 +65,7 @@ class ListPostsController extends AbstractListController
         'lastThreeComments.replyUser',
         'deletedUser',
         'lastDeletedLog',
+        'likedUsers'                        // Eric Modified
     ];
 
     /**
