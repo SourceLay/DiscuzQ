@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Controller\Posts;
 
 use App\Api\Serializer\CommentPostSerializer;
@@ -282,27 +286,27 @@ class ListPostsController extends AbstractListController
         }
 
         // 待审核
-        $isApproved = Arr::get($filter, 'isApproved');
-        if ($isApproved === '1') {
-            $query->where('posts.is_approved', Post::APPROVED);
-        } elseif ($actor->can('approvePosts')) {
-            if ($isApproved === '0') {
-                $query->where('posts.is_approved', Post::UNAPPROVED);
-            } elseif ($isApproved === '2') {
-                $query->where('posts.is_approved', Post::IGNORED);
-            }
-        }
+        // $isApproved = Arr::get($filter, 'isApproved');
+        // if ($isApproved === '1') {
+        //     $query->where('posts.is_approved', Post::APPROVED);
+        // } elseif ($actor->can('approvePosts')) {
+        //     if ($isApproved === '0') {
+        //         $query->where('posts.is_approved', Post::UNAPPROVED);
+        //     } elseif ($isApproved === '2') {
+        //         $query->where('posts.is_approved', Post::IGNORED);
+        //     }
+        // }
 
         // 回收站
-        if ($isDeleted = Arr::get($filter, 'isDeleted')) {
-            if ($isDeleted == 'yes' && $actor->can('viewTrashed')) {
-                // 只看回收站帖子
-                $query->whereNotNull('posts.deleted_at');
-            } elseif ($isDeleted == 'no') {
-                // 不看回收站帖子
-                $query->whereNull('posts.deleted_at');
-            }
-        }
+        //if ($isDeleted = Arr::get($filter, 'isDeleted')) {
+        //    if ($isDeleted == 'yes' && $actor->can('viewTrashed')) {
+        //        // 只看回收站帖子
+        //        $query->whereNotNull('posts.deleted_at');
+        //    } elseif ($isDeleted == 'no') {
+        //        // 不看回收站帖子
+        //        $query->whereNull('posts.deleted_at');
+        //    }
+        //}
 
         // 是否是评论
         if ($isComment = Arr::get($filter, 'isComment')) {

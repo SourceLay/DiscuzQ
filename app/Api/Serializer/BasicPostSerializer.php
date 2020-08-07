@@ -65,11 +65,11 @@ class BasicPostSerializer extends AbstractSerializer
 
         $attributes = [
             'replyUserId'       => $model->reply_user_id,
-            'replyPostId'       => $model->reply_post_id, // Eric Modified
-            'summary'           => $model->summary,
-            'summaryText'       => $model->summary_text,
-            'content'           => $model->content,
-            'contentHtml'       => $model->formatContent(),
+            'replyPostId'       => $model->reply_post_id,       // Eric Modified
+            // 'summary'           => $model->summary,
+            // 'summaryText'       => $model->summary_text,
+            // 'content'           => $model->content,          // Eric Modified
+            // 'contentHtml'       => $model->formatContent(),
             'replyCount'        => (int) $model->reply_count,
             'likeCount'         => (int) $model->like_count,
             'longitude'         => $model->longitude,
@@ -90,11 +90,36 @@ class BasicPostSerializer extends AbstractSerializer
             ];
         }
 
+        // Eric Modified
+        $canSee = true;
+
         if ($model->deleted_at) {
             $attributes['isDeleted'] = true;
             $attributes['deletedAt'] = $this->formatDate($model->deleted_at);
+
+            // Eric Modified
+            if (!$this->actor->can('viewTrashed')) $canSee = false;
+
         } else {
             $attributes['isDeleted'] = false;
+        }
+
+        if ($model->is_approved != 1) {
+            if (!$this->actor->can('approvePosts')) $canSee = false;
+        }
+
+        // Eric Modified
+        if ($canSee) {
+            $attributes['summary']      = $model->summary;
+            $attributes['summaryText']  = $model->summary_text;
+            $attributes['content']      = $model->content;
+            $attributes['contentHtml']  = $model->formatContent();
+        }
+        else {
+            $attributes['summary']      = null;
+            $attributes['summaryText']  = null;
+            $attributes['content']      = null;
+            $attributes['contentHtml']  = null;
         }
 
         Post::setStateUser($this->actor);
@@ -144,7 +169,23 @@ class BasicPostSerializer extends AbstractSerializer
      */
     protected function likedUsers($post)
     {
-        return $this->hasMany($post, UserSerializer::class);
+        // Eric Modified
+        $canSee = true;
+
+        if ($post->deleted_at) {
+            if (!$this->actor->can('viewTrashed')) $canSee = false;
+        }
+
+        if ($post->is_approved != 1) {
+            if (!$this->actor->can('approvePosts')) $canSee = false;
+        }
+
+        if ($canSee) {
+            return $this->hasMany($post, UserSerializer::class);
+        }
+        else {
+            return null;
+        }
     }
 
     /**
