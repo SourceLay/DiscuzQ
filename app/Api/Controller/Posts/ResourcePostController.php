@@ -104,6 +104,14 @@ class ResourcePostController extends AbstractResourceController
             $this->includePosts($post, $request, $postRelationships);
         }
 
+        // Eric Modified.
+        $post->setAttribute('floor',
+            $post->newQUery()
+                ->where('thread_id', $post->thread_id)
+                ->where('id','<=',$post->id)
+                ->count()
+        );
+
         return $post;
     }
 
@@ -142,14 +150,6 @@ class ResourcePostController extends AbstractResourceController
             ->each(function (Post $comment) use ($post) {
                 $comment->replyPost = $post;
             });
-
-        // Eric Modified.
-        $post->setAttribute('floor',
-                $post->newQUery()
-                    ->where('thread_id', $post->thread_id)
-                    ->where('id','<=',$post->id)
-                    ->count()
-            );
 
         $post->setRelation('commentPosts', $comments);
     }
