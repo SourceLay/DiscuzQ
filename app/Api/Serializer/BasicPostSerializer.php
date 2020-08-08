@@ -133,7 +133,6 @@ class BasicPostSerializer extends AbstractSerializer
      */
     protected function user($post)
     {
-        if (!$this->canSee($post)) return null;
         return $this->hasOne($post, UserSerializer::class);
     }
 

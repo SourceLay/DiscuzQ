@@ -106,7 +106,6 @@ class ThreadSerializer extends AbstractSerializer
      */
     protected function user($thread)
     {
-        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasOne($thread, UserSerializer::class);
     }
 
