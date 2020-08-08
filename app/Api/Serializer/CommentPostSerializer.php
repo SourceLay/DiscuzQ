@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Serializer;
 
 use App\Models\Post;
@@ -49,6 +53,7 @@ class CommentPostSerializer extends BasicPostSerializer
      */
     protected function lastThreeComments($post)
     {
+        if (!$this->canSee($post)) return null;  // Eric Modified
         return $this->hasMany($post, CommentPostSerializer::class);
     }
 }

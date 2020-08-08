@@ -105,7 +105,7 @@ class BasicPostSerializer extends AbstractSerializer
         }
 
         if ($model->is_approved != 1) {
-            if (!$this->actor->can('approvePosts')) $canSee = false;
+            if (($model->user_id != $this->actor->id) && (!$this->actor->can('approvePosts'))) $canSee = false;
         }
 
         // Eric Modified
@@ -133,6 +133,7 @@ class BasicPostSerializer extends AbstractSerializer
      */
     protected function user($post)
     {
+        if (!$this->canSee($post)) return null;
         return $this->hasOne($post, UserSerializer::class);
     }
 
@@ -142,6 +143,7 @@ class BasicPostSerializer extends AbstractSerializer
      */
     protected function thread($post)
     {
+        if (!$this->canSee($post)) return null;  // Eric Modified
         return $this->hasOne($post, ThreadSerializer::class);
     }
 
@@ -151,6 +153,7 @@ class BasicPostSerializer extends AbstractSerializer
      */
     protected function replyUser($post)
     {
+        if (!$this->canSee($post)) return null;  // Eric Modified
         return $this->hasOne($post, UserSerializer::class);
     }
 
@@ -160,6 +163,7 @@ class BasicPostSerializer extends AbstractSerializer
      */
     protected function deletedUser($post)
     {
+        if (!$this->canSee($post)) return null;  // Eric Modified
         return $this->hasOne($post, UserSerializer::class);
     }
 
@@ -169,23 +173,8 @@ class BasicPostSerializer extends AbstractSerializer
      */
     protected function likedUsers($post)
     {
-        // Eric Modified
-        $canSee = true;
-
-        if ($post->deleted_at) {
-            if (!$this->actor->can('viewTrashed')) $canSee = false;
-        }
-
-        if ($post->is_approved != 1) {
-            if (!$this->actor->can('approvePosts')) $canSee = false;
-        }
-
-        if ($canSee) {
-            return $this->hasMany($post, UserSerializer::class);
-        }
-        else {
-            return null;
-        }
+        if (!$this->canSee($post)) return null;  // Eric Modified
+        return $this->hasMany($post, UserSerializer::class);
     }
 
     /**
@@ -194,6 +183,7 @@ class BasicPostSerializer extends AbstractSerializer
      */
     public function mentionUsers($post)
     {
+        if (!$this->canSee($post)) return null;  // Eric Modified
         return $this->hasMany($post, UserSerializer::class);
     }
 
@@ -203,6 +193,7 @@ class BasicPostSerializer extends AbstractSerializer
      */
     protected function images($post)
     {
+        if (!$this->canSee($post)) return null;  // Eric Modified
         return $this->hasMany($post, AttachmentSerializer::class);
     }
 
@@ -212,6 +203,7 @@ class BasicPostSerializer extends AbstractSerializer
      */
     protected function attachments($post)
     {
+        if (!$this->canSee($post)) return null;  // Eric Modified
         return $this->hasMany($post, AttachmentSerializer::class);
     }
 
@@ -221,6 +213,7 @@ class BasicPostSerializer extends AbstractSerializer
      */
     public function logs($post)
     {
+        if (!$this->canSee($post)) return null;  // Eric Modified
         return $this->hasMany($post, UserActionLogsSerializer::class);
     }
 
@@ -230,6 +223,28 @@ class BasicPostSerializer extends AbstractSerializer
      */
     public function lastDeletedLog($post)
     {
+        if (!$this->canSee($post)) return null;  // Eric Modified
         return $this->hasOne($post, UserActionLogsSerializer::class);
+    }
+
+    /**
+     * 该回复是否可见
+     *
+     * @param $post
+     * @return bool
+     */
+    protected function canSee($post)
+    {
+        $canSee = true;
+
+        if ($post->deleted_at) {
+            if (!$this->actor->can('viewTrashed')) $canSee = false;
+        }
+
+        if ($post->is_approved != 1) {
+            if (($post->user_id != $this->actor->id) && (!$this->actor->can('approvePosts'))) $canSee = false;
+        }
+
+        return $canSee;
     }
 }

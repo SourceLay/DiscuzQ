@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Serializer;
 
 use App\Models\Thread;
@@ -59,7 +63,7 @@ class ThreadSerializer extends AbstractSerializer
 
         $attributes = [
             'type'              => (int) $model->type,
-            'title'             => $model->title,
+            'title'             => $this->canSee($model) ? $model->title : null, // Eric Modified
             'price'             => $model->price,
             'freeWords'         => (int) $model->free_words,
             'viewCount'         => (int) $model->view_count,
@@ -102,6 +106,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     protected function user($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasOne($thread, UserSerializer::class);
     }
 
@@ -111,6 +116,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     protected function lastPostedUser($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasOne($thread, UserSerializer::class);
     }
 
@@ -120,6 +126,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     protected function deletedUser($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasOne($thread, UserSerializer::class);
     }
 
@@ -129,6 +136,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     protected function category($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasOne($thread, CategorySerializer::class);
     }
 
@@ -138,6 +146,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     public function firstPost($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasOne($thread, PostSerializer::class);
     }
 
@@ -147,6 +156,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     public function lastThreePosts($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasMany($thread, PostSerializer::class);
     }
 
@@ -156,6 +166,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     public function posts($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasMany($thread, PostSerializer::class);
     }
 
@@ -165,6 +176,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     public function rewarded($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasMany($thread, OrderSerializer::class);
     }
 
@@ -174,6 +186,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     public function rewardedUsers($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasMany($thread, UserSerializer::class);
     }
 
@@ -183,6 +196,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     public function paidUsers($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasMany($thread, UserSerializer::class);
     }
 
@@ -192,6 +206,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     public function logs($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasMany($thread, UserActionLogsSerializer::class);
     }
 
@@ -201,6 +216,7 @@ class ThreadSerializer extends AbstractSerializer
      */
     public function lastDeletedLog($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasOne($thread, UserActionLogsSerializer::class);
     }
 
@@ -210,11 +226,34 @@ class ThreadSerializer extends AbstractSerializer
      */
     public function threadVideo($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasOne($thread, ThreadVideoSerializer::class);
     }
 
     public function topic($thread)
     {
+        if (!$this->canSee($thread)) return null;  // Eric Modified
         return $this->hasMany($thread, TopicSerializer::class);
+    }
+
+    /**
+     * 该帖子是否可见
+     *
+     * @param $thread
+     * @return bool
+     */
+    protected function canSee($thread)
+    {
+        $canSee = true;
+
+        if ($thread->deleted_at) {
+            if (!$this->actor->can('viewTrashed')) $canSee = false;
+        }
+
+        if ($thread->is_approved != 1) {
+            if (($thread->user_id != $this->actor->id) && (!$this->actor->can('approvePosts'))) $canSee = false;
+        }
+
+        return $canSee;
     }
 }
