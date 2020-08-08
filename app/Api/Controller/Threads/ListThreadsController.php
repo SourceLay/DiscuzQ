@@ -16,10 +16,6 @@
  * limitations under the License.
  */
 
-/**
- * Eric Modified
- */
-
 namespace App\Api\Controller\Threads;
 
 use App\Api\Serializer\ThreadSerializer;
@@ -245,8 +241,7 @@ class ListThreadsController extends AbstractListController
      */
     public function search($actor, $filter, $sort, $limit = null, $offset = 0)
     {
-        // $query = $this->threads->query()->select('threads.*')->whereVisibleTo($actor);
-        $query = $this->threads->query()->select('threads.*');      // Eric Modified
+        $query = $this->threads->query()->select('threads.*')->whereVisibleTo($actor);
 
         $this->applyFilters($query, $filter, $actor);
 
