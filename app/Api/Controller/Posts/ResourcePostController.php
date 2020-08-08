@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Controller\Posts;
 
 use App\Api\Serializer\PostSerializer;
@@ -138,6 +142,14 @@ class ResourcePostController extends AbstractResourceController
             ->each(function (Post $comment) use ($post) {
                 $comment->replyPost = $post;
             });
+
+        // Eric Modified.
+        $post->setAttribute('floor',
+                $post->newQUery()
+                    ->where('thread_id', $post->thread_id)
+                    ->where('id','<=',$post->id)
+                    ->count()
+            );
 
         $post->setRelation('commentPosts', $comments);
     }

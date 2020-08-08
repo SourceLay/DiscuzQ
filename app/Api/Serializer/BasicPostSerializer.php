@@ -122,6 +122,11 @@ class BasicPostSerializer extends AbstractSerializer
             $attributes['contentHtml']  = null;
         }
 
+        // 楼层号
+        if ($model->floor) {
+            $attributes['floor']  = $model->floor;
+        }
+
         Post::setStateUser($this->actor);
 
         return $attributes;
