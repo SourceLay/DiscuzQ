@@ -16,10 +16,15 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Serializer;
 
 use App\Models\Category;
 use App\Models\User;
+use App\Paraparty\Models\Activities;
 use App\Settings\ForumSettingField;
 use Carbon\Carbon;
 use Discuz\Api\Serializer\AbstractSerializer;
@@ -129,6 +134,7 @@ class ForumSettingSerializer extends AbstractSerializer
                 'count_threads' => (int)$this->settings->get('thread_count'), // 统计所有主题数
                 'count_posts' => (int)$this->settings->get('post_count'), // 统计所有回复数
                 'count_users' => (int)$this->settings->get('user_count'), // 统计所有的用户
+                'activities_daily' => Activities::getToday(), // 统计今日活跃 // Eric Modified
                 // 权限 permission
                 'can_upload_attachments' => $this->actor->can('attachment.create.0'),
                 'can_upload_images' => $this->actor->can('attachment.create.1'),

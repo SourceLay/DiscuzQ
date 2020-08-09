@@ -38,7 +38,7 @@ class CategorySerializer extends AbstractSerializer
     protected function getDefaultAttributes($model)
     {
         // Eric Modified
-        $daily = Activities::getToday();
+        $daily = Activities::getToday($model->id);
 
         return [
             'name'              => $model->name,

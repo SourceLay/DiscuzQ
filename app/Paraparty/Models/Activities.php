@@ -44,18 +44,31 @@ class Activities extends Model
         return $reference;
     }
 
-    public static function getToday() {
+    public static function getToday($category_id = null) {
         // TODO 做缓存
-        static::query()->where('created_at', '<', Carbon::now()->subDay())->delete();
+
+        $query = static::query();
+        if ($category_id != null)
+            $query = $query->where('category_id', $category_id);
+        $threads = $query
+            ->where('created_at', '>=', Carbon::now()->subDay())
+            ->where('is_first', 1)
+            ->count();
+
+        $query = static::query();
+        if ($category_id)
+            $query = $query->where('category_id', $category_id);
+        $posts = $query
+            ->where('created_at', '>=', Carbon::now()->subDay())
+            ->count();
 
         return [
-            'thread' => static::query()
-                ->where('created_at', '>=', Carbon::now()->subDay())
-                ->where('is_first', 1)
-                ->count(),
-            'post' =>  static::query()
-                ->where('created_at', '>=', Carbon::now()->subDay())
-                ->count(),
+            'threads' => $threads,
+            'posts' =>  $posts,
         ];
+    }
+
+    public static function deleteOld(){
+        static::query()->where('created_at', '<', Carbon::now()->subDay())->delete();
     }
 }
