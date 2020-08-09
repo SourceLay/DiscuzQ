@@ -16,8 +16,13 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Serializer;
 
+use App\Paraparty\Models\Activities;                    // Eric Modified
 use Discuz\Api\Serializer\AbstractSerializer;
 
 class CategorySerializer extends AbstractSerializer
@@ -32,6 +37,9 @@ class CategorySerializer extends AbstractSerializer
      */
     protected function getDefaultAttributes($model)
     {
+        // Eric Modified
+        $daily = Activities::getToday();
+
         return [
             'name'              => $model->name,
             'description'       => $model->description,
@@ -45,6 +53,7 @@ class CategorySerializer extends AbstractSerializer
             'canViewThreads'    => $this->actor->can('viewThreads', $model),
             'canCreateThread'   => $this->actor->can('createThread', $model),
             'canReplyThread'    => $this->actor->can('replyThread', $model),
+            'activities_daily'  => $daily,      // Eric Modified
         ];
     }
 }

@@ -104,7 +104,7 @@ class ResourcePostController extends AbstractResourceController
             $this->includePosts($post, $request, $postRelationships);
         }
 
-        // Eric Modified.
+        // Eric Modified
         $post->setAttribute('floor',
             $post->newQUery()
                 ->where('thread_id', $post->thread_id)

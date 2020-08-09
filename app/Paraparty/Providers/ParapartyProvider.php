@@ -2,10 +2,11 @@
 
 namespace App\Paraparty\Providers;
 
+use App\Paraparty\Listeners\ActivitiesListener;
 use App\Paraparty\Listeners\ReferencesListener;
 use Discuz\Foundation\AbstractServiceProvider;
 
-class ReferencesProvider extends AbstractServiceProvider
+class ParapartyProvider extends AbstractServiceProvider
 {
     /**
      * 注册服务.
@@ -28,6 +29,7 @@ class ReferencesProvider extends AbstractServiceProvider
 
         // 订阅事件
         $events->subscribe(ReferencesListener::class);
+        $events->subscribe(ActivitiesListener::class);
     }
 
 
