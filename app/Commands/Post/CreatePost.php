@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Commands\Post;
 
 use App\Censor\Censor;
@@ -208,6 +212,14 @@ class CreatePost
         // $this->notifications->onePerUser(function () use ($post, $actor) {
         $this->dispatchEventsFor($post, $this->actor);
         // });
+
+        // Eric Modified
+        $post->setAttribute('floor',
+            $post->newQUery()
+                ->where('thread_id', $post->thread_id)
+                ->where('id','<=',$post->id)
+                ->count()
+        );
 
         return $post;
     }
