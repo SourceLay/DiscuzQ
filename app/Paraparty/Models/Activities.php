@@ -45,8 +45,20 @@ class Activities extends Model
     }
 
     public static function getToday($category_id = null) {
-        // TODO 做缓存
 
+        // 缓存
+        // TODO 可能会有更优雅的写法
+        $cache = app()['cache'];
+        $cache = $cache->driver($cache->getDefaultDriver());
+        $cache_key = "paraparty_activities_cache_".($category_id == null ? "all" : $category_id);
+
+        // 有缓存
+        $cache_date = $cache->get($cache_key, null);
+        if ($cache_date != null) {
+            return $cache_date;
+        }
+
+        // 无缓存
         $query = static::query();
         if ($category_id != null)
             $query = $query->where('category_id', $category_id);
@@ -62,13 +74,18 @@ class Activities extends Model
             ->where('created_at', '>=', Carbon::now()->subDay())
             ->count();
 
-        return [
+        $ret = [
             'threads' => $threads,
             'posts' =>  $posts,
         ];
+
+        // 写入缓存
+        $cache->put($cache_key, $ret, 300);
+
+        return $ret;
     }
 
     public static function deleteOld(){
-        static::query()->where('created_at', '<', Carbon::now()->subDay())->delete();
+        static::query()->where('created_at', '<', Carbon::now()->subWeek())->delete();
     }
 }
