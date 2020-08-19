@@ -13,7 +13,6 @@ class Config
      * @param string $string
      * @param $default
      * @return mixed
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public static function get(string $string, $default)
     {

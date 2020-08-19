@@ -22,11 +22,10 @@
 
 namespace App\Models;
 
+use App\Paraparty\Helper\Topics\Topics as ParapartyTopics;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use s9e\TextFormatter\Utils;
-
-use App\Paraparty\Topics\Topics as ParapartyTopics;
 
 /**
  * Models a thread-topic state record in the database.

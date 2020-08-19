@@ -1,10 +1,9 @@
 <?php
 
 
-namespace App\Paraparty\Topics;
+namespace App\Paraparty\Helper\Topics;
 
 use App\Models\Post;
-use App\Models\Thread;
 use App\Models\Topic;
 
 class Topics
