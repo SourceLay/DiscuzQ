@@ -2,6 +2,7 @@
 
 namespace App\Paraparty\Models;
 
+use App\Paraparty\Helper\Cache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -47,9 +48,7 @@ class Activities extends Model
     public static function getToday($category_id = null) {
 
         // 缓存
-        // TODO 可能会有更优雅的写法
-        $cache = app()['cache'];
-        $cache = $cache->driver($cache->getDefaultDriver());
+        $cache = Cache::getCacheRepository();
         $cache_key = "paraparty_activities_cache_".($category_id == null ? "all" : $category_id);
 
         // 有缓存
