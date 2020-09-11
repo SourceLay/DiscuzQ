@@ -23,6 +23,7 @@
 namespace App\Api\Serializer;
 
 use App\Paraparty\Models\Activities;                    // Eric Modified
+use App\Models\Category;
 use Discuz\Api\Serializer\AbstractSerializer;
 
 class CategorySerializer extends AbstractSerializer
@@ -33,7 +34,8 @@ class CategorySerializer extends AbstractSerializer
     protected $type = 'categories';
 
     /**
-     * {@inheritdoc}
+     * @param Category $model
+     * @return array
      */
     protected function getDefaultAttributes($model)
     {
@@ -44,8 +46,8 @@ class CategorySerializer extends AbstractSerializer
             'name'              => $model->name,
             'description'       => $model->description,
             'icon'              => $model->icon,
-            'sort'              => $model->sort,
-            'property'          => $model->property,
+            'sort'              => (int) $model->sort,
+            'property'          => (int) $model->property,
             'thread_count'      => (int) $model->thread_count,
             'ip'                => $model->ip,
             'created_at'        => $this->formatDate($model->created_at),
@@ -53,6 +55,9 @@ class CategorySerializer extends AbstractSerializer
             'canViewThreads'    => $this->actor->can('viewThreads', $model),
             'canCreateThread'   => $this->actor->can('createThread', $model),
             'canReplyThread'    => $this->actor->can('replyThread', $model),
+            'canEditThread'     => $this->actor->can('thread.edit', $model),
+            'canHideThread'     => $this->actor->can('thread.hide', $model),
+            'canEssenceThread'  => $this->actor->can('thread.essence', $model),
             'activities_daily'  => $daily,      // Eric Modified
         ];
     }

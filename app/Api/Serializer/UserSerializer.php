@@ -66,8 +66,6 @@ class UserSerializer extends AbstractSerializer
 
         $canEdit = $gate->allows('edit', $model);
 
-        $settings = app()->make(SettingsRepository::class);
-
         $attributes = [
             'id'                => (int) $model->id,
             'username'          => $model->username,
@@ -138,8 +136,11 @@ class UserSerializer extends AbstractSerializer
                 'canEditUsername' => true,  // 可否更改用户名
             ];
         } else {
+            /** @var SettingsRepository $settings */
+            $settings = app(SettingsRepository::class);
+
             $attributes += [
-                'canEditUsername' => $model->username_bout >= $settings->get('username_bout', 'default', 1) ? false : true,
+                'canEditUsername' => $model->username_bout < $settings->get('username_bout', 'default', 1),
             ];
         }
 

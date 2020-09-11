@@ -26,6 +26,7 @@ use App\Models\Post;
 use App\Traits\HasPaidContent;
 use Discuz\Api\Serializer\AbstractSerializer;
 use Illuminate\Contracts\Auth\Access\Gate;
+use s9e\TextFormatter\Utils;
 use Tobscure\JsonApi\Relationship;
 
 class BasicPostSerializer extends AbstractSerializer
@@ -63,6 +64,13 @@ class BasicPostSerializer extends AbstractSerializer
 
         $canEdit = $gate->allows('edit', $model);
 
+        // 插入文中的图片及附件 ID
+        $contentAttachIds = collect(
+            Utils::getAttributeValues($model->getRawOriginal('content'), 'IMG', 'title')
+        )->merge(
+            Utils::getAttributeValues($model->getRawOriginal('content'), 'URL', 'title')
+        )->unique()->values();
+
         $attributes = [
             'replyUserId'       => $model->reply_user_id,
             'replyPostId'       => $model->reply_post_id,       // Eric Modified
@@ -79,6 +87,7 @@ class BasicPostSerializer extends AbstractSerializer
             'canApprove'        => $gate->allows('approve', $model),
             'canDelete'         => $gate->allows('delete', $model),
             'canHide'           => $gate->allows('hide', $model),
+            'contentAttachIds'  => $contentAttachIds,
         ];
 
         if ($canEdit || $this->actor->id === $model->user_id) {
