@@ -67,6 +67,7 @@ class ListPostsController extends AbstractListController
         'lastThreeComments',
         'lastThreeComments.user',
         'lastThreeComments.replyUser',
+        'lastThreeComments.images',
         'deletedUser',
         'lastDeletedLog',
         'likedUsers'                        // Eric Modified
