@@ -239,6 +239,15 @@ class BasicPostSerializer extends AbstractSerializer
     }
 
     /**
+     * @param $post
+     * @return Relationship
+     */
+    public function postGoods($post)
+    {
+        return $this->hasOne($post, PostGoodsSerializer::class);
+    }
+
+    /**
      * 该回复是否可见
      *
      * @param $post

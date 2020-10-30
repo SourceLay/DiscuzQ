@@ -25,6 +25,7 @@ namespace App\Api\Serializer;
 use App\Paraparty\Models\Activities;                    // Eric Modified
 use App\Models\Category;
 use Discuz\Api\Serializer\AbstractSerializer;
+use Tobscure\JsonApi\Relationship;
 
 class CategorySerializer extends AbstractSerializer
 {
@@ -60,5 +61,14 @@ class CategorySerializer extends AbstractSerializer
             'canEssenceThread'  => $this->actor->can('thread.essence', $model),
             'activities_daily'  => $daily,      // Eric Modified
         ];
+    }
+
+    /**
+     * @param Category $category
+     * @return Relationship
+     */
+    protected function moderators($category)
+    {
+        return $this->hasMany($category, UserSerializer::class, 'moderatorUsers');
     }
 }
