@@ -18,25 +18,18 @@
 
 namespace App\Traits;
 
-use App\MessageTemplate\PostDeleteMessage;
-use App\MessageTemplate\PostModMessage;
-use App\MessageTemplate\PostOrderMessage;
-use App\MessageTemplate\PostStickMessage;
-use App\MessageTemplate\PostThroughMessage;
-use App\MessageTemplate\Wechat\WechatPostDeleteMessage;
-use App\MessageTemplate\Wechat\WechatPostModMessage;
-use App\MessageTemplate\Wechat\WechatPostOrderMessage;
-use App\MessageTemplate\Wechat\WechatPostStickMessage;
-use App\MessageTemplate\Wechat\WechatPostThroughMessage;
 use App\Models\Thread;
 use App\Models\User;
+use App\Notifications\Messages\Database\PostMessage;
+use App\Notifications\Messages\Wechat\QuestionedWechatMessage;
+use App\Notifications\Questioned;
 use App\Notifications\System;
 use Illuminate\Support\Arr;
 
 /**
  * Thread 发送通知
- *
  * Trait ThreadNoticesTrait
+ *
  * @package App\Traits
  */
 trait ThreadNoticesTrait
@@ -54,6 +47,8 @@ trait ThreadNoticesTrait
         // 审核通过时发送 @ 通知
         if ($type === 'isApproved' && $thread->is_approved === Thread::APPROVED) {
             $this->sendRelated($thread->firstPost, $thread->user);
+            // 如果是问答审核，发送回答者通知
+            $this->sendQuestioned($thread->question, $thread->user);
         }
 
         // 无需给自己发送通知
@@ -80,6 +75,24 @@ trait ThreadNoticesTrait
     }
 
     /**
+     * @param $question
+     * @param User $user 主题创建人
+     */
+    public function sendQuestioned($question, User $user)
+    {
+        // 帖子合法才允许发送
+        $build = [
+            'message' => $question->thread->getContentByType(Thread::CONTENT_LENGTH, true),
+            'raw' => array_merge(Arr::only($question->toArray(), ['thread_id', 'price']), [
+                'actor_username' => $question->thread->isAnonymousName(),   // 提问人姓名/匿名
+            ]),
+        ];
+
+        // Tag 发送通知 (向回答人发送问答通知)
+        $question->beUser->notify(new Questioned(QuestionedWechatMessage::class, $user, $question, $build));
+    }
+
+    /**
      * 内容置顶通知
      *
      * @param $thread
@@ -88,16 +101,12 @@ trait ThreadNoticesTrait
     {
         $build = [
             'message' => $this->getThreadTitle($thread),
-            'raw' => [
-                'thread_id' => $thread->id,
-            ],
+            'raw' => ['thread_id' => $thread->id],
+            'notify_type' => PostMessage::NOTIFY_STICKY_TYPE,
         ];
 
-        // 系统通知
-        $thread->user->notify(new System(PostOrderMessage::class, $build));
-
-        // 微信通知
-        $thread->user->notify(new System(WechatPostOrderMessage::class, $build));
+        // Tag 发送通知
+        $thread->user->notify(new System(PostMessage::class, $thread->user, $build));
     }
 
     /**
@@ -109,16 +118,12 @@ trait ThreadNoticesTrait
     {
         $build = [
             'message' => $this->getThreadTitle($thread),
-            'raw' => [
-                'thread_id' => $thread->id,
-            ],
+            'raw' => ['thread_id' => $thread->id],
+            'notify_type' => PostMessage::NOTIFY_ESSENCE_TYPE,
         ];
 
-        // 系统通知
-        $thread->user->notify(new System(PostStickMessage::class, $build));
-
-        // 微信通知
-        $thread->user->notify(new System(WechatPostStickMessage::class, $build));
+        // Tag 发送通知
+        $thread->user->notify(new System(PostMessage::class, $thread->user, $build));
     }
 
     /**
@@ -127,18 +132,17 @@ trait ThreadNoticesTrait
      * @param $thread
      * @param array $attach 原因
      */
-    private function sendIsDeleted($thread, $attach)
+    private function sendIsDeleted($thread, array $attach)
     {
         $data = [
             'message' => $this->getThreadTitle($thread),
             'refuse' => $attach['refuse'],
+            'raw' => ['thread_id' => $thread->id],
+            'notify_type' => PostMessage::NOTIFY_DELETE_TYPE,
         ];
 
-        // 系统通知
-        $thread->user->notify(new System(PostDeleteMessage::class, Arr::set($data, 'raw', ['thread_id' => $thread->id])));
-
-        // 微信通知 (跳转到首页)
-        $thread->user->notify(new System(WechatPostDeleteMessage::class, Arr::set($data, 'raw', ['thread_id' => 0])));
+        // Tag 发送通知
+        $thread->user->notify(new System(PostMessage::class, $thread->user, $data));
     }
 
     /**
@@ -147,27 +151,24 @@ trait ThreadNoticesTrait
      * @param $thread
      * @param array $attach 原因
      */
-    private function sendIsApproved($thread, $attach)
+    private function sendIsApproved($thread, array $attach)
     {
         $data = [
             'message' => $this->getThreadTitle($thread),
             'refuse' => $attach['refuse'],
-            'raw' => [
-                'thread_id' => $thread->id,
-            ],
+            'raw' => ['thread_id' => $thread->id],
         ];
 
         if ($thread->is_approved == 1) {
             // 发送通过通知
-            $thread->user->notify(new System(PostThroughMessage::class, $data));
-            // 微信通知
-            $thread->user->notify(new System(WechatPostThroughMessage::class, $data));
+            $data = array_merge($data, ['notify_type' => PostMessage::NOTIFY_APPROVED_TYPE]);
         } elseif ($thread->is_approved == 2) {
             // 忽略就发送不通过通知
-            $thread->user->notify(new System(PostModMessage::class, $data));
-            // 微信通知
-            $thread->user->notify(new System(WechatPostModMessage::class, $data));
+            $data = array_merge($data, ['notify_type' => PostMessage::NOTIFY_UNAPPROVED_TYPE]);
         }
+
+        // Tag 发送通知
+        $thread->user->notify(new System(PostMessage::class, $thread->user, $data));
     }
 
     /**
