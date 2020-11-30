@@ -23,6 +23,7 @@
 namespace App\Api\Serializer;
 
 use App\Models\Post;
+use App\SourceLay\Api\Serializer\FileSerializer;    // Eric Modified
 use App\Traits\HasPaidContent;
 use Discuz\Api\Serializer\AbstractSerializer;
 use Illuminate\Contracts\Auth\Access\Gate;
@@ -245,6 +246,17 @@ class BasicPostSerializer extends AbstractSerializer
     public function postGoods($post)
     {
         return $this->hasOne($post, PostGoodsSerializer::class);
+    }
+
+    /**
+     * Eric Modified
+     *
+     * @param $post
+     * @return Relationship
+     */
+    public function file($post)
+    {
+        return $this->hasMany($post, FileSerializer::class);
     }
 
     /**

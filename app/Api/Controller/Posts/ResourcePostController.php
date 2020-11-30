@@ -54,6 +54,7 @@ class ResourcePostController extends AbstractResourceController
      */
     public $include = [
         'user',
+        'file',
     ];
 
     /**

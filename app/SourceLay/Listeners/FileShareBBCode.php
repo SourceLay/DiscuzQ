@@ -33,7 +33,7 @@ class FileShareBBCode
                 } else if ($fileShare->shared_type != FileShare::FILESHARE_TYPE_FREE) {
                     $fileThread->priority = 10;
                 } else {
-                    continue
+                    continue;
                 }
 
                 $fileThread->file_id = $fileShare->file->id;

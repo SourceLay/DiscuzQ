@@ -2,6 +2,8 @@
 
 namespace App\SourceLay\Models;
 
+use App\Models\Post;
+use App\Models\Thread;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -47,5 +49,20 @@ class File extends Model
     function user()
     {
         return $this->hasOne(User::class, 'id', 'user_id');
+    }
+
+    public function likedUsers()
+    {
+        return $this->belongsToMany(User::class, FileLike::getTableName());
+    }
+
+    public function posts()
+    {
+        return $this->belongsToMany(Post::class, FileThread::getTableName());
+    }
+
+    public function thread()
+    {
+        return $this->belongsToMany(Thread::class, FileThread::getTableName());
     }
 }

@@ -3,10 +3,11 @@
 
 namespace App\SourceLay\Api\Serializer;
 
+use App\Api\Serializer\PostSerializer;
+use App\Api\Serializer\ThreadSerializer;
 use App\Api\Serializer\UserSerializer;
 use App\SourceLay\Models\File;
 use Discuz\Api\Serializer\AbstractSerializer;
-use Tobscure\JsonApi\Relationship;
 
 class FileSerializer extends AbstractSerializer
 {
@@ -48,12 +49,24 @@ class FileSerializer extends AbstractSerializer
         return $ret;
     }
 
-    /**
-     * @param $post
-     * @return Relationship
-     */
     protected function user($post)
     {
         return $this->hasOne($post, UserSerializer::class);
     }
+
+    public function posts($post)
+    {
+        return $this->hasMany($post, PostSerializer::class);
+    }
+
+    public function thread($post)
+    {
+        return $this->hasMany($post, ThreadSerializer::class);
+    }
+
+    public function likedUsers($post)
+    {
+        return $this->hasMany($post, UserSerializer::class);
+    }
+
 }

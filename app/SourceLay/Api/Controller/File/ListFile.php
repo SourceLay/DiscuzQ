@@ -19,6 +19,12 @@ use Tobscure\JsonApi\Document;
  */
 class ListFile extends AbstractListController
 {
+    public $optionalInclude = [
+        "likedUsers",
+        "posts",
+        "thread",
+    ];
+
     /**
      * {@inheritdoc}
      */

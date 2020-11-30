@@ -31,6 +31,10 @@ class FileThread extends Model
 
     const FILE_STATUS_COMMITED = 1;
 
+    static function getTableName(){
+        return 'sourcelay_file_thread_relation_info';
+    }
+
     function file()
     {
         return $this->hasOne(File::class, 'id', 'file_id');
