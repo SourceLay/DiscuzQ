@@ -39,19 +39,24 @@ class ListFileShare extends AbstractListController
      */
     protected function data(ServerRequestInterface $request, Document $document)
     {
-        // $actor = $request->getAttribute('actor');
+        $actor = $request->getAttribute('actor');
         $query = FileShare::query();
 
         // 设置用户可见
-//        if ($actor instanceof Guest) {
-//            $query->whereRaw("false");
-//        } else {
-//            $query->where('user_id', '=', $actor->id);
-//        }
+        if ($actor instanceof Guest) {
+            // 公开分享文件
+            $query->where('shared_type', FileShare::FILESHARE_TYPE_FREE);
+        } else {
+            $query->where(function ($query) use ($request, $actor) {
+                // 公开分享文件
+                $query->where('shared_type', FileShare::FILESHARE_TYPE_FREE);
 
-        $query->where('shared_type', FileShare::FILESHARE_TYPE_FREE);
+                // 自己的分享文件
+                $query->owWhere('user_id', $actor->id);
+            });
+        }
 
-        // 排除已被删除的文件
+        // 排除已被删除的分享
         $query->whereNull('deleted_at');
 
         // 设置排序规则
