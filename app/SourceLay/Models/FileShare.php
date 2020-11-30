@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int download_count
  * @property int is_recommend
  * @property int delete_id
- * @package App\Models0
+ * @package App\Models
  */
 class FileShare extends Model
 {
