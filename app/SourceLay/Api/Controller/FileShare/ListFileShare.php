@@ -1,14 +1,13 @@
 <?php
 
 
-namespace App\SourceLay\Api\Controller\File;
+namespace App\SourceLay\Api\Controller\FileShare;
 
 
-use App\SourceLay\Api\Serializer\FileSerializer;
-use App\SourceLay\Models\File;
+use App\SourceLay\Api\Serializer\FileShareSerializer;
+use App\SourceLay\Models\FileShare;
 use Discuz\Api\Controller\AbstractListController;
 use Discuz\Auth\Guest;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
@@ -17,19 +16,20 @@ use Tobscure\JsonApi\Document;
  * Class TestApiController
  * @package ExerciseBook\DiscuzQRouteDemo
  */
-class ListFile extends AbstractListController
+class ListFileShare extends AbstractListController
 {
     /**
      * {@inheritdoc}
      */
     public $include = [
-        'user'
+        'user',
+        'file'
     ];
 
     /**
      * @var string
      */
-    public $serializer = FileSerializer::class;
+    public $serializer = FileShareSerializer::class;
 
     /**
      * {@inheritdoc}
@@ -39,24 +39,20 @@ class ListFile extends AbstractListController
      */
     protected function data(ServerRequestInterface $request, Document $document)
     {
-        $actor = $request->getAttribute('actor');
-        $query = File::query();
+        // $actor = $request->getAttribute('actor');
+        $query = FileShare::query();
 
         // 设置用户可见
-        if ($actor instanceof Guest) {
-            $query->whereRaw("false");
-        } else {
-            $query->where('user_id', '=', $actor->id);
-        }
+//        if ($actor instanceof Guest) {
+//            $query->whereRaw("false");
+//        } else {
+//            $query->where('user_id', '=', $actor->id);
+//        }
+
+        $query->where('shared_type', FileShare::FILESHARE_TYPE_FREE);
 
         // 排除已被删除的文件
         $query->whereNull('deleted_at');
-
-        // 设置搜索筛选器
-        $filter = $this->extractFilter($request);
-        if ($folderName = Arr::get($filter, 'folder')) {
-            $query->where('folder', '=', $folderName);
-        }
 
         // 设置排序规则
         $sort = $this->extractSort($request);

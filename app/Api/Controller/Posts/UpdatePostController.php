@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Controller\Posts;
 
 use App\Api\Serializer\CommentPostSerializer;
@@ -44,6 +48,7 @@ class UpdatePostController extends AbstractResourceController
         'lastThreeComments',
         'lastThreeComments.user',
         'lastThreeComments.replyUser',
+        'likedUsers'                        // Eric Modified
     ];
 
     /**

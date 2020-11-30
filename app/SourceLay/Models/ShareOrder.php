@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property int order_id
  * @property int fileshared_id
- * @package App\Models
+ * @package App\SourceLay\Models
  */
 class ShareOrder extends Model
 {

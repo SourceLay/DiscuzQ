@@ -8,13 +8,6 @@ use App\SourceLay\Models\File;
 use Discuz\Api\Serializer\AbstractSerializer;
 use Tobscure\JsonApi\Relationship;
 
-/**
- * 数据序列化类
- * 将控制器处理好的内容序列化为前端可用的信息
- *
- * Class TestApiSerializer
- * @package ExerciseBook\DiscuzQRouteDemo
- */
 class FileSerializer extends AbstractSerializer
 {
     /**

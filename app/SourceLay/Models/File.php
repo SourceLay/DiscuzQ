@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @property  string random_id
  * @property  string storage_name
  * @package App\Models
+ * @package App\SourceLay\Models
  */
 class File extends Model
 {
