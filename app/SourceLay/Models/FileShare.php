@@ -2,6 +2,7 @@
 
 namespace App\SourceLay\Models;
 
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -40,6 +41,16 @@ class FileShare extends Model
     const FILESHARE_TYPE_NEEDPASSWORD = 1;
 
     const FILESHARE_TYPE_NEEDMONEY = 2;
+
+    public static function isPurchased(FileShare $model, $actor)
+    {
+        return Order::query()->join((new ShareOrder())->getTable(), 'id', '=','order_id') // 联表查询
+        ->where('status', Order::ORDER_STATUS_PAID) // 已付费
+        ->where('fileshared_id','=',$model->id) // 文件分享编号
+        ->where('user_id', '=', $actor->id) // 用户编号
+        ->where('type', '=', Order::ORDER_TYPE_SOURCELAY_FILEPURCHASE) // 类型为源来文件购买
+        ->exists();
+    }
 
     /**
      * @return HasOne

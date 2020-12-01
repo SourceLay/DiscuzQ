@@ -289,9 +289,9 @@ class CreateOrder
                 }
 
                 // 检查是否已经购买了
-                $order = Order::query()->join((new ShareOrder())->getTable(), 'id', '=','order_id') // lianbiaochaxun
+                $order = Order::query()->join((new ShareOrder())->getTable(), 'id', '=','order_id') // 联表查询
                     ->where('status', Order::ORDER_STATUS_PAID) // 已付费
-                    ->where('fileshare_id','=',$share_id) // 文件分享编号
+                    ->where('fileshared_id','=',$share_id) // 文件分享编号
                     ->where('user_id', '=', $this->actor->id) // 用户编号
                     ->where('type', '=', Order::ORDER_TYPE_SOURCELAY_FILEPURCHASE) // 类型为源来文件购买
                     ->exists();

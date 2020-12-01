@@ -44,6 +44,12 @@ class FileShareSerializer extends AbstractSerializer
             $ret['user_id'] = 0;
         }
 
+        if (FileShare::isPurchased($model, $this->actor)) {
+            $ret['paid'] = true;
+        } else {
+            $ret['paid'] = false;
+        }
+
         return $ret;
     }
 
