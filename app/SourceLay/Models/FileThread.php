@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
  * @property int priority
  * @property int thread_id
  * @property Carbon created_at
- * @package App\Models
+ * @method static firstOrCreate($attributes, $values)
  * @package App\SourceLay\Models
  */
 class FileThread extends Model
@@ -26,6 +26,9 @@ class FileThread extends Model
     protected $keyType = 'int';
 
     const UPDATED_AT = null;
+
+    protected $fillable = ['file_id', 'fileshare_id', 'post_id', 'thread_id', 'priority'];
+
 
     const FILE_STATUS_PENDING = 0;
 
