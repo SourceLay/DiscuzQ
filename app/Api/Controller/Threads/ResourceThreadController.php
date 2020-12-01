@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Controller\Threads;
 
 use App\Api\Serializer\ThreadSerializer;
@@ -88,6 +92,8 @@ class ResourceThreadController extends AbstractResourceController
         'question.beUser.groups',
         'question.images',
         'onlookers',
+        'firstPost.file',                                   // Eric Modified
+        'firstPost.fileShare',                              // Eric Modified
     ];
 
     /**

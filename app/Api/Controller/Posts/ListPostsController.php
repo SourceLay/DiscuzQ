@@ -72,7 +72,9 @@ class ListPostsController extends AbstractListController
         'lastThreeComments.images',
         'deletedUser',
         'lastDeletedLog',
-        'likedUsers'                        // Eric Modified
+        'likedUsers',                  // Eric Modified
+        'file',                        // Eric Modified
+        'fileShare',                   // Eric Modified
     ];
 
     /**

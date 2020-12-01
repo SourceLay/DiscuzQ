@@ -54,7 +54,6 @@ class ResourcePostController extends AbstractResourceController
      */
     public $include = [
         'user',
-        'file',
     ];
 
     /**
@@ -72,6 +71,8 @@ class ResourcePostController extends AbstractResourceController
         'commentPosts.images',
         'images',
         'attachments',
+        'file',                                                 // Eric Modified
+        'fileShare',                                            // Eric Modified
     ];
 
     /**

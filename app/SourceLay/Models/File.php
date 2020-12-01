@@ -64,4 +64,11 @@ class File extends Model
     {
         return $this->belongsToMany(Thread::class, FileThread::getTableName());
     }
+
+    public function share()
+    {
+        return $this->belongsTo(Thread::class, FileThread::getTableName());
+    }
+
+
 }

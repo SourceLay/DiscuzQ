@@ -23,8 +23,9 @@ use App\Events\Post\Hidden;
 use App\Events\Post\Restored;
 use App\Events\Post\Revised;
 use App\Formatter\Formatter;
-use App\SourceLay\Models\File;
-use App\SourceLay\Models\FileThread;        // Erif Modified
+use App\SourceLay\Models\File;              // Eric Modified
+use App\SourceLay\Models\FileShare;         // Eric Modified
+use App\SourceLay\Models\FileThread;        // Eric Modified
 use Carbon\Carbon;
 use DateTime;
 use Discuz\Common\Utils;
@@ -553,6 +554,14 @@ class Post extends Model
     public function file()
     {
         return $this->belongsToMany(File::class, FileThread::getTableName());
+    }
+
+    /**
+     * Eric Modified
+     */
+    public function fileShare()
+    {
+        return $this->belongsToMany(FileShare::class, FileThread::getTableName(), 'fileshare_id', 'post_id');
     }
 
     /**
