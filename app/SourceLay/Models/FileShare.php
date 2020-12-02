@@ -44,9 +44,9 @@ class FileShare extends Model
 
     public static function isPurchased(FileShare $model, $actor)
     {
-        return Order::query()->join((new ShareOrder())->getTable(), 'id', '=','order_id') // 联表查询
+        return Order::query()->join((new ShareOrder())->getTable(), 'id', '=', 'order_id') // 联表查询
         ->where('status', Order::ORDER_STATUS_PAID) // 已付费
-        ->where('fileshared_id','=',$model->id) // 文件分享编号
+        ->where('fileshared_id', '=', $model->id) // 文件分享编号
         ->where('user_id', '=', $actor->id) // 用户编号
         ->where('type', '=', Order::ORDER_TYPE_SOURCELAY_FILEPURCHASE) // 类型为源来文件购买
         ->exists();
@@ -66,5 +66,28 @@ class FileShare extends Model
     function file()
     {
         return $this->hasOne(File::class, 'id', 'file_id');
+    }
+
+    public function toRequestArray()
+    {
+        $ret = [];
+
+        $ret['id'] = $this->id;
+        $ret['file_id'] = $this->file_id;
+        $ret['user_id'] = $this->user_id;
+        $ret['shared_desc'] = $this->shared_desc;
+        $ret['shared_type'] = $this->shared_type;
+        $ret['password'] = $this->password;
+        $ret['is_anonymous'] = $this->is_anonymous;
+        $ret['cost'] = $this->cost;
+        $ret['view_count'] = $this->view_count;
+        $ret['download_count'] = $this->download_count;
+        $ret['is_recommended'] = $this->is_recommended;
+        $ret['recommended_at'] = $this->recommended_at;
+        $ret['created_at'] = $this->created_at;
+        $ret['deleted_at'] = $this->deleted_at;
+        $ret['deleted_id'] = $this->deleted_id;
+
+        return $ret;
     }
 }
