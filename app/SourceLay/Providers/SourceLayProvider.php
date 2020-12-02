@@ -32,6 +32,7 @@ class SourceLayProvider extends AbstractServiceProvider
             // 添加一个 API 路由
             $route->get('/file', 'sourcelay.file.list', \App\SourceLay\Api\Controller\File\ListFile::class);
             $route->post('/file', 'sourcelay.file.create', \App\SourceLay\Api\Controller\File\CreateFile::class);
+            $route->patch('/file', 'sourcelay.file.commit', \App\SourceLay\Api\Controller\File\CommitFile::class);
 
             $route->get('/fileshare', 'sourcelay.file.list', \App\SourceLay\Api\Controller\FileShare\ListFileShare::class);
         });

@@ -14,7 +14,7 @@ use Illuminate\Support\Arr;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
 
-class CreateFile extends AbstractCreateController
+class CommitFile extends AbstractCreateController
 {
     public $optionalInclude = [
         'user'
@@ -57,24 +57,22 @@ class CreateFile extends AbstractCreateController
 
         $data = $request->getParsedBody()->get('data', []);
 
-        $name = Arr::get($data, 'attributes.name', null);
-        $type = Arr::get($data, 'attributes.type', null);
-        $size = Arr::get($data, 'attributes.size', null);
-        $folder = Arr::get($data, 'attributes.folder', null);
-
-        if ($name === null || $type === null || $size === null || $folder === null) {
+        $fileId = Arr::get($data, 'attributes.id', null);
+        if ($fileId === null) {
             throw new Exception('invalid_arguments');
         }
 
-        $result = $this->client->fileRequestUploadURL($name, $folder, $type, $size);
+        $result = $this->client->fileInsureUploadSuccessfully($fileId);
         if ($result->status() != 200) {
             throw new Exception('bad_request');
         }
 
-        $result = $result->json();
+        $result = strtolower($result->body());
+        if ($result !== 'true') {
+            throw new Exception('bad_request');
+        }
 
-        $file = File::where('random_id', $result['guid'])->first();
-        $file->uploadUrl = $result['url'];
+        $file = File::find($fileId);
 
         return $file;
     }
