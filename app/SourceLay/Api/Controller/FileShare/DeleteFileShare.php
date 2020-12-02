@@ -6,18 +6,15 @@ namespace App\SourceLay\Api\Controller\FileShare;
 
 use App\SourceLay\Api\Serializer\FileShareSerializer;
 use App\SourceLay\Library\SourceLayClient;
-use App\SourceLay\Models\FileShare;
-use Discuz\Api\Controller\AbstractResourceController;
+use Discuz\Api\Controller\AbstractDeleteController;
 use Discuz\Auth\Guest;
 use Exception;
 use Illuminate\Support\Arr;
 use Psr\Http\Message\ServerRequestInterface;
-use Tobscure\JsonApi\Document;
 
-class DownloadFileShare extends AbstractResourceController
+class DeleteFileShare extends AbstractDeleteController
 {
     public $optionalInclude = [
-        'user'
     ];
 
     /**
@@ -25,6 +22,7 @@ class DownloadFileShare extends AbstractResourceController
      */
     public $include = [
     ];
+
     /**
      * @var string
      */
@@ -40,13 +38,8 @@ class DownloadFileShare extends AbstractResourceController
         $this->client = $client;
     }
 
-    /**
-     * {@inheritdoc}
-     * @param ServerRequestInterface $request
-     * @param Document $document
-     * @return object
-     */
-    protected function data(ServerRequestInterface $request, Document $document)
+
+    protected function delete(ServerRequestInterface $request)
     {
         $actor = $request->getAttribute('actor');
         if ($actor instanceof Guest) {
@@ -54,19 +47,23 @@ class DownloadFileShare extends AbstractResourceController
         }
         $this->client->actor = $actor;
 
-        $shareId = Arr::get($request->getQueryParams(), 'id');
+        $fileShareId = Arr::get($request->getQueryParams(), 'id');
+        if ($fileShareId === null) {
+            throw new Exception('invalid_arguments');
+        }
 
-        $result = $this->client->fileGetShareDownloadUrl($shareId);
+        $result = $this->client->shareDeleteShareByShareId($fileShareId);
         if ($result->status() != 200) {
             throw new Exception('bad_request');
         }
 
-        // TODO 判断操作状态
+        $result = strtolower($result->body());
+        if ($result !== '0') {
+            // TODO
+            throw new Exception('bad_request');
+        }
 
-        $file = FileShare::find($shareId);
-        $file->downloadUrl = $result->body();
-
-        return $file;
+        // $file = File::find($fileId);
+        // return $file;
     }
-
 }

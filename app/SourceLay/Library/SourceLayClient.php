@@ -113,7 +113,12 @@ class SourceLayClient
         return $this->sendRequest('/share/update', $fileShare->toRequestArray());
     }
 
-    // TODO 按照分享 id 删除分享
+    public function shareDeleteShareByShareId($fileShareId) {
+        return $this->sendRequest('/share/cancelSharedFile', [
+            'fileShareId' => $fileShareId,
+        ]);
+    }
+
 
     ////////////////////////////////
 

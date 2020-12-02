@@ -60,6 +60,7 @@ class CreateFile extends AbstractCreateController
 
         $name = Arr::get($data, 'attributes.name', null);
         $type = Arr::get($data, 'attributes.type', null);
+        // TODO 过滤不合法的 type
         $size = Arr::get($data, 'attributes.size', null);
         $folder = Arr::get($data, 'attributes.folder', null);
 

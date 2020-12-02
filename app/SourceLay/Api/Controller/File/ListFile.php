@@ -60,6 +60,10 @@ class ListFile extends AbstractListController
             $query->where('folder', '=', $folderName);
         }
 
+        if ($type = Arr::get($filter, 'type')) {
+            $query->where('type', '=', $type);
+        }
+
         // 设置排序规则
         $sort = $this->extractSort($request);
         foreach ((array)$sort as $field => $order) {

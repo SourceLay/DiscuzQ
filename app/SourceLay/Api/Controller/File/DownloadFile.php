@@ -14,7 +14,7 @@ use Illuminate\Support\Arr;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
 
-class DownloadFile extends AbstractResourceController
+class  DownloadFile extends AbstractResourceController
 {
     public $optionalInclude = [
         'user'

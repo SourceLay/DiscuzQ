@@ -30,15 +30,20 @@ class SourceLayProvider extends AbstractServiceProvider
         // API 路由组
         $route->group('/api/sourcelay', function (RouteCollection $route) {
             // 添加一个 API 路由
+
             $route->get('/file/{id}', 'sourcelay.file.list', \App\SourceLay\Api\Controller\File\DownloadFile::class);
+            $route->delete('/file/{id}', 'sourcelay.file.delete', \App\SourceLay\Api\Controller\File\DeleteFile::class);
             $route->get('/file', 'sourcelay.file.list', \App\SourceLay\Api\Controller\File\ListFile::class);
             $route->post('/file', 'sourcelay.file.create', \App\SourceLay\Api\Controller\File\CreateFile::class);
             $route->put('/file', 'sourcelay.file.commit', \App\SourceLay\Api\Controller\File\CommitFile::class);
-            $route->delete('/file', 'sourcelay.file.delete', \App\SourceLay\Api\Controller\File\DeleteFile::class);
 
-            $route->get('/fileshare', 'sourcelay.fileshare.list', \App\SourceLay\Api\Controller\FileShare\ListFileShare::class);
+
             $route->patch('/fileshare/{id}', 'sourcelay.fileshare.patch', \App\SourceLay\Api\Controller\FileShare\UpdateFileShare::class);
             $route->get('/fileshare/{id}', 'sourcelay.fileshare.patch', \App\SourceLay\Api\Controller\FileShare\DownloadFileShare::class);
+            $route->delete('/fileshare/{id}', 'sourcelay.fileshare.patch', \App\SourceLay\Api\Controller\FileShare\DeleteFileShare::class);
+            $route->get('/fileshare', 'sourcelay.fileshare.list', \App\SourceLay\Api\Controller\FileShare\ListFileShare::class);
+            $route->post('/fileshare', 'sourcelay.fileshare.list', \App\SourceLay\Api\Controller\FileShare\CreateFileShare::class);
+
         });
 
         // 事件处理类

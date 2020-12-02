@@ -47,9 +47,7 @@ class DeleteFile extends AbstractDeleteController
         }
         $this->client->actor = $actor;
 
-        $data = $request->getParsedBody()->get('data', []);
-
-        $fileId = Arr::get($data, 'attributes.id', null);
+        $fileId = Arr::get($request->getQueryParams(), 'id');
         if ($fileId === null) {
             throw new Exception('invalid_arguments');
         }
