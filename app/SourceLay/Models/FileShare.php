@@ -73,17 +73,17 @@ class FileShare extends Model
         $ret = [];
 
         $ret['id'] = $this->id;
-        $ret['file_id'] = $this->file_id;
-        $ret['user_id'] = $this->user_id;
-        $ret['shared_desc'] = $this->shared_desc;
-        $ret['shared_type'] = $this->shared_type;
+        $ret['fileId'] = $this->file_id;
+        $ret['userId'] = $this->user_id;
+        $ret['sharedDesc'] = $this->shared_desc;
+        $ret['sharedType'] = $this->shared_type;
         $ret['password'] = $this->password;
-        $ret['is_anonymous'] = $this->is_anonymous;
+        $ret['isAnonymous'] = $this->is_anonymous;
         $ret['cost'] = $this->cost;
         $ret['view_count'] = $this->view_count;
         $ret['download_count'] = $this->download_count;
-        $ret['is_recommended'] = $this->is_recommended;
-        $ret['recommended_at'] = $this->recommended_at;
+        $ret['isRecommended'] = $this->is_recommended;
+        $ret['recommendedAt'] = $this->recommended_at;
         $ret['created_at'] = $this->created_at;
         $ret['deleted_at'] = $this->deleted_at;
         $ret['deleted_id'] = $this->deleted_id;
