@@ -64,14 +64,6 @@ class CommitFile extends AbstractCreateController
         }
 
         $result = $this->client->fileInsureUploadSuccessfully($fileId);
-        if ($result->status() != 200) {
-            throw new Exception('bad_request');
-        }
-
-        $result = strtolower($result->body());
-        if ($result !== 'true') {
-            throw new Exception('bad_request');
-        }
 
         $file = File::find($fileId);
 

@@ -57,11 +57,6 @@ class DownloadFileShare extends AbstractResourceController
         $shareId = Arr::get($request->getQueryParams(), 'id');
 
         $result = $this->client->fileGetShareDownloadUrl($shareId);
-        if ($result->status() != 200) {
-            throw new Exception('bad_request');
-        }
-
-        // TODO 判断操作状态
 
         $file = FileShare::find($shareId);
         $file->downloadUrl = $result->body();

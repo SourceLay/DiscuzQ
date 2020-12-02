@@ -56,9 +56,6 @@ class  DownloadFile extends AbstractResourceController
         $fileId = Arr::get($request->getQueryParams(), 'id');
 
         $result = $this->client->fileGetFileDownloadUrl($fileId);
-        if ($result->status() != 200) {
-            throw new Exception('bad_request');
-        }
 
         $file = File::find($fileId);
         $file->downloadUrl = $result->body();

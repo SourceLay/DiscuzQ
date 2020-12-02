@@ -93,15 +93,6 @@ class CreateFileShare extends AbstractCreateController
         }
 
         $result = $this->client->shareShareByAll($fileShare);
-        if ($result->status() != 200) {
-            throw new Exception('bad_request');
-        }
-
-        $result = (int)$result->body();
-
-        if ($result < 0) {
-            throw new Exception('bad_request');
-        }
 
         $fileShare = FileShare::find($result);
 

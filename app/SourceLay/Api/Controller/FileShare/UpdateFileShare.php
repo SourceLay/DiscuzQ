@@ -80,9 +80,6 @@ class UpdateFileShare extends AbstractCreateController
         $file = $fileShare->file;
 
         $result = $this->client->like($fileShare->id, $file->id, $isLiked);
-        if ($result->status() != 200) {
-            throw new Exception('bad_request');
-        }
 
         $result = strtolower($result->body());
         if ($result !== 'true') {
@@ -110,14 +107,6 @@ class UpdateFileShare extends AbstractCreateController
         }
 
         $result = $this->client->shareUpdate($fileShare);
-        if ($result->status() != 200) {
-            throw new Exception('bad_request');
-        }
-
-        $result = strtolower($result->body());
-        if ($result !== 'true') {
-            throw new Exception('bad_request');
-        }
 
         $file = FileShare::find($fileShareId);
         $include = $this->extractInclude($request);

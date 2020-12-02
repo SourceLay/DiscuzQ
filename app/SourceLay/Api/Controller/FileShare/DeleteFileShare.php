@@ -53,15 +53,6 @@ class DeleteFileShare extends AbstractDeleteController
         }
 
         $result = $this->client->shareDeleteShareByShareId($fileShareId);
-        if ($result->status() != 200) {
-            throw new Exception('bad_request');
-        }
-
-        $result = strtolower($result->body());
-        if ($result !== '0') {
-            // TODO
-            throw new Exception('bad_request');
-        }
 
         // $file = File::find($fileId);
         // return $file;

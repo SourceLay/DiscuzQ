@@ -10,6 +10,7 @@ use App\SourceLay\Models\File;
 use Discuz\Api\Controller\AbstractCreateController;
 use Discuz\Auth\Guest;
 use Exception;
+use GuzzleHttp\Psr7\MimeType;
 use Illuminate\Support\Arr;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
@@ -60,7 +61,12 @@ class CreateFile extends AbstractCreateController
 
         $name = Arr::get($data, 'attributes.name', null);
         $type = Arr::get($data, 'attributes.type', null);
-        // TODO 过滤不合法的 type
+        if ($type != 'text/directory') {
+            $type = MimeType::fromFilename($name);
+            if ($type == null) {
+                $type = 'application/octet-stream';
+            }
+        }
         $size = Arr::get($data, 'attributes.size', null);
         $folder = Arr::get($data, 'attributes.folder', null);
 
@@ -69,14 +75,16 @@ class CreateFile extends AbstractCreateController
         }
 
         $result = $this->client->fileRequestUploadURL($name, $folder, $type, $size);
-        if ($result->status() != 200) {
-            throw new Exception('bad_request');
-        }
 
         $result = $result->json();
+        $guid = $result['guid'];
 
-        $file = File::where('random_id', $result['guid'])->first();
-        $file->uploadUrl = $result['url'];
+        if ($guid != '1') {
+            $file = File::where('random_id', $result['guid'])->first();
+            $file->uploadUrl = $result['url'];
+        } else {
+            $file = File::where('name', $name)->where('folder', $folder)->first();
+        }
 
         return $file;
     }
