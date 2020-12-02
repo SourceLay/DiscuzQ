@@ -7,25 +7,27 @@ namespace App\SourceLay\Api\Controller\File;
 use App\SourceLay\Api\Serializer\FileSerializer;
 use App\SourceLay\Library\SourceLayClient;
 use App\SourceLay\Models\File;
-use Discuz\Api\Controller\AbstractCreateController;
+use Discuz\Api\Controller\AbstractResourceController;
 use Discuz\Auth\Guest;
 use Exception;
 use Illuminate\Support\Arr;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
 
-class CommitFile extends AbstractCreateController
+class DownloadFile extends AbstractResourceController
 {
     public $optionalInclude = [
-        'user'
+        "likedUsers",
+        "posts",
+        "thread",
     ];
 
     /**
      * {@inheritdoc}
      */
     public $include = [
+        'user'
     ];
-
     /**
      * @var string
      */
@@ -39,7 +41,6 @@ class CommitFile extends AbstractCreateController
     {
         $this->client = $client;
     }
-
 
     /**
      * {@inheritdoc}
@@ -55,25 +56,15 @@ class CommitFile extends AbstractCreateController
         }
         $this->client->actor = $actor;
 
+        $fileId = Arr::get($request->getQueryParams(), 'id');
 
-        $data = $request->getParsedBody()->get('data', []);
-
-        $fileId = Arr::get($data, 'attributes.id', null);
-        if ($fileId === null) {
-            throw new Exception('invalid_arguments');
-        }
-
-        $result = $this->client->fileInsureUploadSuccessfully($fileId);
+        $result = $this->client->fileGetFileDownloadUrl($fileId);
         if ($result->status() != 200) {
             throw new Exception('bad_request');
         }
 
-        $result = strtolower($result->body());
-        if ($result !== 'true') {
-            throw new Exception('bad_request');
-        }
-
         $file = File::find($fileId);
+        $file->downloadUrl = $result->body();
 
         return $file;
     }

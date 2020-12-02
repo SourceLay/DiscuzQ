@@ -50,6 +50,10 @@ class FileSerializer extends AbstractSerializer
             $ret['uploadUrl'] = $model->uploadUrl;
         }
 
+        if ($model->downloadUrl) {
+            $ret['downloadUrl'] = $model->downloadUrl;
+        }
+
         return $ret;
     }
 

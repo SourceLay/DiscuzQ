@@ -6,13 +6,11 @@ namespace App\SourceLay\Api\Controller\File;
 
 use App\SourceLay\Api\Serializer\FileSerializer;
 use App\SourceLay\Library\SourceLayClient;
-use App\SourceLay\Models\File;
 use Discuz\Api\Controller\AbstractDeleteController;
 use Discuz\Auth\Guest;
 use Exception;
 use Illuminate\Support\Arr;
 use Psr\Http\Message\ServerRequestInterface;
-use Tobscure\JsonApi\Document;
 
 class DeleteFile extends AbstractDeleteController
 {
@@ -30,12 +28,14 @@ class DeleteFile extends AbstractDeleteController
      * @var string
      */
     public $serializer = FileSerializer::class;
+
     /**
      * @var SourceLayClient
      */
     private $client;
 
-    public function __construct(SourceLayClient $client){
+    public function __construct(SourceLayClient $client)
+    {
         $this->client = $client;
     }
 

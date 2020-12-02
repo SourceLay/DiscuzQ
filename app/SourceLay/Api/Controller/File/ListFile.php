@@ -62,7 +62,7 @@ class ListFile extends AbstractListController
 
         // 设置排序规则
         $sort = $this->extractSort($request);
-        foreach ((array) $sort as $field => $order) {
+        foreach ((array)$sort as $field => $order) {
             $query->orderBy(Str::snake($field), $order);
         }
 

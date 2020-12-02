@@ -35,7 +35,8 @@ class CreateFile extends AbstractCreateController
      */
     private $client;
 
-    public function __construct(SourceLayClient $client){
+    public function __construct(SourceLayClient $client)
+    {
         $this->client = $client;
     }
 
