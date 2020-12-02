@@ -38,6 +38,7 @@ class SourceLayProvider extends AbstractServiceProvider
 
             $route->get('/fileshare', 'sourcelay.fileshare.list', \App\SourceLay\Api\Controller\FileShare\ListFileShare::class);
             $route->patch('/fileshare/{id}', 'sourcelay.fileshare.patch', \App\SourceLay\Api\Controller\FileShare\UpdateFileShare::class);
+            $route->get('/fileshare/{id}', 'sourcelay.fileshare.patch', \App\SourceLay\Api\Controller\FileShare\DownloadFileShare::class);
         });
 
         // 事件处理类

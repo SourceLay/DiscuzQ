@@ -17,16 +17,13 @@ use Tobscure\JsonApi\Document;
 class DownloadFile extends AbstractResourceController
 {
     public $optionalInclude = [
-        "likedUsers",
-        "posts",
-        "thread",
+        'user'
     ];
 
     /**
      * {@inheritdoc}
      */
     public $include = [
-        'user'
     ];
     /**
      * @var string

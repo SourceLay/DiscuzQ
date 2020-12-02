@@ -1,20 +1,23 @@
 <?php
 
 
-namespace App\SourceLay\Api\Controller\File;
+namespace App\SourceLay\Api\Controller\FileShare;
 
 
 use App\SourceLay\Api\Serializer\FileSerializer;
 use App\SourceLay\Library\SourceLayClient;
-use Discuz\Api\Controller\AbstractDeleteController;
+use App\SourceLay\Models\FileShare;
+use Discuz\Api\Controller\AbstractResourceController;
 use Discuz\Auth\Guest;
 use Exception;
 use Illuminate\Support\Arr;
 use Psr\Http\Message\ServerRequestInterface;
+use Tobscure\JsonApi\Document;
 
-class DeleteFile extends AbstractDeleteController
+class DownloadFileShare extends AbstractResourceController
 {
     public $optionalInclude = [
+        'user'
     ];
 
     /**
@@ -22,12 +25,10 @@ class DeleteFile extends AbstractDeleteController
      */
     public $include = [
     ];
-
     /**
      * @var string
      */
     public $serializer = FileSerializer::class;
-
     /**
      * @var SourceLayClient
      */
@@ -38,8 +39,13 @@ class DeleteFile extends AbstractDeleteController
         $this->client = $client;
     }
 
-
-    protected function delete(ServerRequestInterface $request)
+    /**
+     * {@inheritdoc}
+     * @param ServerRequestInterface $request
+     * @param Document $document
+     * @return object
+     */
+    protected function data(ServerRequestInterface $request, Document $document)
     {
         $actor = $request->getAttribute('actor');
         if ($actor instanceof Guest) {
@@ -47,25 +53,19 @@ class DeleteFile extends AbstractDeleteController
         }
         $this->client->actor = $actor;
 
-        $data = $request->getParsedBody()->get('data', []);
+        $shareId = Arr::get($request->getQueryParams(), 'id');
 
-        $fileId = Arr::get($data, 'attributes.id', null);
-        if ($fileId === null) {
-            throw new Exception('invalid_arguments');
-        }
-
-        $result = $this->client->fileDeleteFile($fileId);
+        $result = $this->client->fileGetShareDownloadUrl($shareId);
         if ($result->status() != 200) {
             throw new Exception('bad_request');
         }
 
-        $result = strtolower($result->body());
-        if ($result !== '0') {
-            // TODO
-            throw new Exception('bad_request');
-        }
+        // TODO 判断操作状态
 
-        // $file = File::find($fileId);
-        // return $file;
+        $file = FileShare::find($shareId);
+        $file->downloadUrl = $result->body();
+
+        return $file;
     }
+
 }

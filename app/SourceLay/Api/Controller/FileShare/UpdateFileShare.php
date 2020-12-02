@@ -18,13 +18,13 @@ class UpdateFileShare extends AbstractCreateController
 {
     public $optionalInclude = [
         'user',
+        'file'
     ];
 
     /**
      * {@inheritdoc}
      */
     public $include = [
-        'file'
     ];
 
     /**

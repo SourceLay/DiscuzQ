@@ -50,6 +50,10 @@ class FileShareSerializer extends AbstractSerializer
             $ret['paid'] = false;
         }
 
+        if ($model->downloadUrl) {
+            $ret['downloadUrl'] = $model->downloadUrl;
+        }
+
         return $ret;
     }
 
