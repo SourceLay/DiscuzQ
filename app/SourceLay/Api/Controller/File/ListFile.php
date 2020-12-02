@@ -13,10 +13,6 @@ use Illuminate\Support\Str;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
 
-/**
- * Class TestApiController
- * @package ExerciseBook\DiscuzQRouteDemo
- */
 class ListFile extends AbstractListController
 {
     public $optionalInclude = [

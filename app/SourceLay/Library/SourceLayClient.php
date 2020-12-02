@@ -7,11 +7,11 @@ namespace App\SourceLay\Library;
 use App\SourceLay\Models\FileShare;
 use Discuz\Auth\Guest;
 use Exception;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Http;
 
-class SourceLay
+class SourceLayClient
 {
     private $baseUrl;
 
@@ -33,7 +33,8 @@ class SourceLay
             throw new Exception('config_error');
         }
 
-        $http = Http::asForm();
+        $http = new PendingRequest();
+        $http->asForm();
         $http->baseUrl($this->baseUrl);
         $params['userId'] = $this->actor->id;
         return $http->post($url, $params);

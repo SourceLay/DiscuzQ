@@ -2,7 +2,7 @@
 
 namespace App\SourceLay\Providers;
 
-use App\SourceLay\Library\SourceLay;
+use App\SourceLay\Library\SourceLayClient;
 use App\SourceLay\Listeners\FileShareBBCode;
 use Discuz\Foundation\AbstractServiceProvider;
 use Discuz\Http\RouteCollection;
@@ -31,6 +31,8 @@ class SourceLayProvider extends AbstractServiceProvider
         $route->group('/api/sourcelay', function (RouteCollection $route) {
             // 添加一个 API 路由
             $route->get('/file', 'sourcelay.file.list', \App\SourceLay\Api\Controller\File\ListFile::class);
+            $route->post('/file', 'sourcelay.file.create', \App\SourceLay\Api\Controller\File\CreateFile::class);
+
             $route->get('/fileshare', 'sourcelay.file.list', \App\SourceLay\Api\Controller\FileShare\ListFileShare::class);
         });
 
@@ -40,8 +42,8 @@ class SourceLayProvider extends AbstractServiceProvider
         // 订阅事件
         $events->subscribe(FileShareBBCode::class);
 
-        $this->app->singleton('HelpSpot\API', function ($app) {
-            return new SourceLay();
+        $this->app->singleton('SourceLayClient', function ($app) {
+            return new SourceLayClient();
         });
     }
 

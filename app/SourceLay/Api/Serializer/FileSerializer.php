@@ -46,6 +46,10 @@ class FileSerializer extends AbstractSerializer
         $ret['deleted_at'] = $model->deleted_at;
         $ret['deleted_id'] = $model->deleted_id;
 
+        if ($model->uploadUrl) {
+            $ret['uploadUrl'] = $model->uploadUrl;
+        }
+
         return $ret;
     }
 
