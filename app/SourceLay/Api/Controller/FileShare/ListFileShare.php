@@ -8,6 +8,7 @@ use App\SourceLay\Api\Serializer\FileShareSerializer;
 use App\SourceLay\Models\FileShare;
 use Discuz\Api\Controller\AbstractListController;
 use Discuz\Auth\Guest;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
@@ -42,18 +43,27 @@ class ListFileShare extends AbstractListController
         $actor = $request->getAttribute('actor');
         $query = FileShare::query();
 
+        // 设置搜索筛选器
+        $filter = $this->extractFilter($request);
+
         // 设置用户可见
         if ($actor instanceof Guest) {
             // 公开分享文件
             $query->where('shared_type', FileShare::FILESHARE_TYPE_FREE);
         } else {
-            $query->where(function ($query) use ($request, $actor) {
-                // 公开分享文件
-                $query->where('shared_type', FileShare::FILESHARE_TYPE_FREE);
+            if ($self = Arr::get($filter, 'self')) {
+                $query->Where('user_id', $actor->id);
+            }
+            else
+            {
+                $query->where(function ($query) use ($request, $actor) {
+                    // 公开分享文件
+                    $query->where('shared_type', FileShare::FILESHARE_TYPE_FREE);
 
-                // 自己的分享文件
-                $query->owWhere('user_id', $actor->id);
-            });
+                    // 自己的分享文件
+                    $query->owWhere('user_id', $actor->id);
+                });
+            }
         }
 
         // 排除已被删除的分享
