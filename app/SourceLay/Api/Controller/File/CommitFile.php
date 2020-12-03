@@ -56,7 +56,7 @@ class CommitFile extends AbstractCreateController
         $this->client->actor = $actor;
 
 
-        $data = $request->getParsedBody()->get('data', []);
+        $data = Arr::get($request->getParsedBody(), 'data', []);
 
         $fileId = Arr::get($data, 'attributes.id', null);
         if ($fileId === null) {

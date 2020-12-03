@@ -57,7 +57,7 @@ class UpdateFileShare extends AbstractCreateController
         $this->client->actor = $actor;
 
         $fileShareIdParam = Arr::get($request->getQueryParams(), 'id');
-        $data = $request->getParsedBody()->get('data', []);
+        $data = Arr::get($request->getParsedBody(), 'data', []);
 
         $fileShareId = Arr::get($data, 'attributes.id', $fileShareIdParam);
         if ($fileShareId === null || $fileShareId != $fileShareIdParam) {

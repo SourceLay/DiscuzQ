@@ -57,7 +57,7 @@ class CreateFile extends AbstractCreateController
         $this->client->actor = $actor;
 
 
-        $data = $request->getParsedBody()->get('data', []);
+        $data = Arr::get($request->getParsedBody(), 'data', []);
 
         $name = Arr::get($data, 'attributes.name', null);
         $type = Arr::get($data, 'attributes.type', null);
@@ -70,8 +70,12 @@ class CreateFile extends AbstractCreateController
         $size = Arr::get($data, 'attributes.size', null);
         $folder = Arr::get($data, 'attributes.folder', null);
 
-        if ($name === null || $type === null || $size === null || $folder === null) {
+        if ($name === null || $type === null || $size === null || $folder === null || !is_string($folder)) {
             throw new Exception('invalid_arguments');
+        }
+
+        if ($folder[strlen($folder) - 1] != '/') {
+            $folder .= '/';
         }
 
         $result = $this->client->fileRequestUploadURL($name, $folder, $type, $size);

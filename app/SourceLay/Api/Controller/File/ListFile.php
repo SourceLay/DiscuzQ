@@ -33,6 +33,8 @@ class ListFile extends AbstractListController
      */
     public $serializer = FileSerializer::class;
 
+    public $sortFields = ['name'];
+
     /**
      * {@inheritdoc}
      * @param ServerRequestInterface $request
@@ -53,6 +55,8 @@ class ListFile extends AbstractListController
 
         // 排除已被删除的文件
         $query->whereNull('deleted_at');
+
+        $query->where('status', 1);
 
         // 设置搜索筛选器
         $filter = $this->extractFilter($request);

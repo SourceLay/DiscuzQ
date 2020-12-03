@@ -56,7 +56,7 @@ class CreateFileShare extends AbstractCreateController
         $this->client->actor = $actor;
 
 
-        $data = $request->getParsedBody()->get('data', []);
+        $data = Arr::get($request->getParsedBody(), 'data', []);
 
         $fileShare = new FileShare();
 
