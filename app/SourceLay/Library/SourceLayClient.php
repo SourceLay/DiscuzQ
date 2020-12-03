@@ -165,7 +165,7 @@ class SourceLayClient
 
     public function shareDeleteShareByShareId($fileShareId) {
         return $this->sendRequest('/share/cancelSharedFile', [
-            'fileShareId' => $fileShareId,
+            'shareId' => $fileShareId,
         ]);
     }
 
