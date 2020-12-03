@@ -31,7 +31,7 @@ class SourceLayProvider extends AbstractServiceProvider
         $route->group('/api/sourcelay', function (RouteCollection $route) {
             // 添加一个 API 路由
 
-            $route->get('/file/{id}', 'sourcelay.file.list', \App\SourceLay\Api\Controller\File\DownloadFile::class);
+            $route->get('/file/{id}', 'sourcelay.file.download', \App\SourceLay\Api\Controller\File\DownloadFile::class);
             $route->delete('/file/{id}', 'sourcelay.file.delete', \App\SourceLay\Api\Controller\File\DeleteFile::class);
             $route->get('/file', 'sourcelay.file.list', \App\SourceLay\Api\Controller\File\ListFile::class);
             $route->post('/file', 'sourcelay.file.create', \App\SourceLay\Api\Controller\File\CreateFile::class);
@@ -39,10 +39,11 @@ class SourceLayProvider extends AbstractServiceProvider
 
 
             $route->patch('/fileshare/{id}', 'sourcelay.fileshare.patch', \App\SourceLay\Api\Controller\FileShare\UpdateFileShare::class);
-            $route->get('/fileshare/{id}', 'sourcelay.fileshare.patch', \App\SourceLay\Api\Controller\FileShare\DownloadFileShare::class);
-            $route->delete('/fileshare/{id}', 'sourcelay.fileshare.patch', \App\SourceLay\Api\Controller\FileShare\DeleteFileShare::class);
+            $route->get('/fileshare/{id}', 'sourcelay.fileshare.download', \App\SourceLay\Api\Controller\FileShare\DownloadFileShare::class);
+            $route->post('/fileshare/{id}', 'sourcelay.fileshare.downloadwithpassword', \App\SourceLay\Api\Controller\FileShare\DownloadFileShare::class);
+            $route->delete('/fileshare/{id}', 'sourcelay.fileshare.delete', \App\SourceLay\Api\Controller\FileShare\DeleteFileShare::class);
             $route->get('/fileshare', 'sourcelay.fileshare.list', \App\SourceLay\Api\Controller\FileShare\ListFileShare::class);
-            $route->post('/fileshare', 'sourcelay.fileshare.list', \App\SourceLay\Api\Controller\FileShare\CreateFileShare::class);
+            $route->post('/fileshare', 'sourcelay.fileshare.create', \App\SourceLay\Api\Controller\FileShare\CreateFileShare::class);
 
         });
 

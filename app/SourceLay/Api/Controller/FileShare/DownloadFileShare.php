@@ -54,12 +54,32 @@ class DownloadFileShare extends AbstractResourceController
         }
         $this->client->actor = $actor;
 
-        $shareId = Arr::get($request->getQueryParams(), 'id');
+        if (strtolower($request->getMethod()) == 'get') {
+            $shareId = Arr::get($request->getQueryParams(), 'id');
 
-        $result = $this->client->fileGetShareDownloadUrl($shareId);
+            $result = $this->client->fileGetShareDownloadUrl($shareId);
 
-        $file = FileShare::find($shareId);
-        $file->downloadUrl = $result->body();
+            $file = FileShare::find($shareId);
+            $file->downloadUrl = $result->body();
+        } else {
+            $fileShareIdParam = Arr::get($request->getQueryParams(), 'id');
+            $data = $request->getParsedBody()->get('data', []);
+
+            $fileShareId = Arr::get($data, 'attributes.id', $fileShareIdParam);
+            if ($fileShareId === null || $fileShareId != $fileShareIdParam) {
+                throw new Exception('invalid_arguments');
+            }
+
+            $password = Arr::get($data, 'attributes.password', null);
+            if ($password === null || $password == '') {
+                throw new Exception('invalid_arguments');
+            }
+
+            $result = $this->client->getShareDownloadUrlByPassword($fileShareId, $password);
+
+            $file = FileShare::find($fileShareId);
+            $file->downloadUrl = $result->body();
+        }
 
         return $file;
     }

@@ -117,6 +117,14 @@ class SourceLayClient
             'minutes' => 30
         ]);
     }
+    public function getShareDownloadUrlByPassword($shareId, $password)
+    {
+        return $this->sendRequest('/file/getShareDownloadUrl', [
+            'shareId' => $shareId,
+            'password' => $password,
+            'minutes' => 30
+        ]);
+    }
 
     public function fileRequestUploadURL($fileName, $folder, $type, $size)
     {
