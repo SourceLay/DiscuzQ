@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Controller\Users;
 
 use App\Api\Serializer\TokenSerializer;
@@ -52,6 +56,8 @@ class RegisterController extends AbstractCreateController
     protected $bind;
 
     protected $events;
+
+    public $include = ['users'];    // Eric Modified
 
     public function __construct(Dispatcher $bus, UserRepository $users, SettingsRepository $settings, Application $app, Bind $bind, Events $events)
     {
