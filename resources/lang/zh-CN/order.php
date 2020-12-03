@@ -27,4 +27,10 @@ return [
     'order_question_onlooker_seen'       => '帖子已支付围观金额',
 
     'order_pay_group_closed' => '权限购买未开启',
+
+    // Eric Modified
+    'order_file_error_fileshare_not_found' => '分享 ID 不存在',
+    'order_file_error_bought' => '文件已购买过',
+    'order_file_error_fileshare_type_notneedmoney' => '分享 ID 不合法',
+
 ];

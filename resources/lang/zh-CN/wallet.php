@@ -52,4 +52,7 @@ return [
     'cash_type_error'       => '提现方式不存在',
     'cash_mch_invalid'      => '未开启微信企业付款到零钱功能',
 
+    // Eric Modified
+    'expend_sourcelay_filepurchase'      => '文件购买支出',
+
 ];

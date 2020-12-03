@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Commands\Trade\Notify;
 
 use App\Events\Order\Updated;
@@ -101,6 +105,11 @@ class WalletPayNotify
                 case Order::ORDER_TYPE_ATTACHMENT:
                     $change_type = UserWalletLog::TYPE_EXPEND_ATTACHMENT;
                     $change_type_lang = 'wallet.expend_attachment';
+                    break;
+                case Order::ORDER_TYPE_SOURCELAY_FILEPURCHASE:
+                    // Eric Modified
+                    $change_type = UserWalletLog::TYPE_EXPEND_SOURCELAY_FILEPURCHASE;
+                    $change_type_lang = 'wallet.expend_sourcelay_filepurchase';
                     break;
                 default:
                     $change_type = $this->data['type'];

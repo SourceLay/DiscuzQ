@@ -72,7 +72,9 @@ class ListPostsController extends AbstractListController
         'lastThreeComments.images',
         'deletedUser',
         'lastDeletedLog',
-        'likedUsers'                        // Eric Modified
+        'likedUsers',                  // Eric Modified
+        'file',                        // Eric Modified
+        'fileShare',                   // Eric Modified
     ];
 
     /**
@@ -222,7 +224,7 @@ class ListPostsController extends AbstractListController
     private function canCache($params)
     {
         //pc端倒序不允许使用缓存
-        if($params['sort'] == '-createdAt'){
+        if(Arr::get($params, 'sort') == '-createdAt'){
             return false;
         }
         if (isset($params['filter'])) {

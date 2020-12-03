@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Models;
 
 use App\Events\WalletLog\Created;
@@ -102,6 +106,11 @@ class UserWalletLog extends Model
     const TYPE_EXPEND_QUESTION = 81; // 问答提问支出
 
     const TYPE_EXPEND_ONLOOKER = 82; // 问答围观支出
+
+    // ----- 分割线 -----
+
+    // Eric Modified
+    const TYPE_EXPEND_SOURCELAY_FILEPURCHASE = 128; // 问答围观支出
 
     /**
      * 创建钱包动账记录

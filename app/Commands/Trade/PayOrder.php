@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Commands\Trade;
 
 use App\Exceptions\TradeErrorException;
@@ -201,6 +205,10 @@ class PayOrder
                 break;
             case Order::ORDER_TYPE_ATTACHMENT:
                 $order_info->body = trans('order.order_type_attachment');
+                break;
+            case Order::ORDER_TYPE_SOURCELAY_FILEPURCHASE:
+                // Erif Modified
+                $order_info->body = trans('order.order_type_sourcelay_filepurchase');
                 break;
             default:
                 $order_info->body = '';

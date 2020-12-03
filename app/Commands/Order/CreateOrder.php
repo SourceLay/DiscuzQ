@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Commands\Order;
 
 use App\Events\Group\PaidGroup;
@@ -27,6 +31,8 @@ use App\Models\Question;
 use App\Models\Thread;
 use App\Models\User;
 use App\Settings\SettingsRepository;
+use App\SourceLay\Models\FileShare;
+use App\SourceLay\Models\ShareOrder;
 use Discuz\Auth\AssertPermissionTrait;
 use Exception;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -271,6 +277,41 @@ class CreateOrder
                 } else {
                     throw new OrderException('order_thread_attachment_error');
                 }
+                break;
+            case Order::ORDER_TYPE_SOURCELAY_FILEPURCHASE :
+                // Eric Modified
+                $share_id = $this->data->get('share_id');
+
+                // 检查分享 id 是否存在
+                $share_info = FileShare::find($share_id);
+                if ($share_info == null) {
+                    throw new OrderException('order_file_error_fileshare_not_found');
+                }
+
+                // 检查是否已经购买了
+                $order = Order::query()->join((new ShareOrder())->getTable(), 'id', '=','order_id') // 联表查询
+                    ->where('status', Order::ORDER_STATUS_PAID) // 已付费
+                    ->where('fileshared_id','=',$share_id) // 文件分享编号
+                    ->where('user_id', '=', $this->actor->id) // 用户编号
+                    ->where('type', '=', Order::ORDER_TYPE_SOURCELAY_FILEPURCHASE) // 类型为源来文件购买
+                    ->exists();
+                // SELECT * FROM orders, sourcelay_file_sharedorder WHERE id = order_id AND  status = 1 AND fileshare_id = {$share_id} AND user_id = {$user_id} AND type = 17
+                if ($order) {
+                    // 重复购买
+                    throw new OrderException('order_file_error_bought');
+                }
+
+                // 检查分享类型
+                if ($share_info->type != FileShare::FILESHARE_TYPE_NEEDMONEY) {
+                    throw new OrderException('order_file_error_fileshare_type_notneedmoney');
+                }
+
+                //TODO 检查这个文件是否被帖子引用过，如果没有则有权限，如果有则判断是否有任意一个帖子该用户有权限访问
+
+                // 设置订单信息
+                $amount = $share_info->cost;
+                $payeeId = $share_info->user_id;
+
                 break;
             default:
                 throw new OrderException('order_type_error');

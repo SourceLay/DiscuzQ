@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Models;
 
 use Carbon\Carbon;
@@ -76,6 +80,9 @@ class Order extends Model
     const ORDER_TYPE_ONLOOKER = 6; // 问答围观
 
     const ORDER_TYPE_ATTACHMENT = 7; //付费附件
+
+    // Eric Modified
+    const ORDER_TYPE_SOURCELAY_FILEPURCHASE = 17; //源来 购买文件
 
     /**
      * 订单状态
