@@ -4,6 +4,7 @@
 namespace App\SourceLay\Api\Serializer;
 
 use App\Api\Serializer\UserSerializer;
+use App\SourceLay\Library\SourceLayClient;
 use App\SourceLay\Models\FileShare;
 use Discuz\Api\Serializer\AbstractSerializer;
 use Tobscure\JsonApi\Relationship;
@@ -44,8 +45,21 @@ class FileShareSerializer extends AbstractSerializer
             $ret['user_id'] = 0;
         }
 
-        if (FileShare::isPurchased($model, $this->actor)) {
+        if (
+            $model->shared_type == FileShare::FILESHARE_TYPE_FREE ||
+            $model->shared_type == FileShare::FILESHARE_TYPE_NEEDMONEY && FileShare::isPurchased($model, $this->actor)
+        ) {
             $ret['paid'] = true;
+
+            $client = new SourceLayClient();
+            $client->actor = $this->actor;
+
+            try {
+                $downloadUrl = $client->fileGetShareDownloadUrl($model->id);
+                $ret['downloadUrl'] = $downloadUrl->body();
+            } catch (\Exception $e) {
+
+            }
         } else {
             $ret['paid'] = false;
         }
