@@ -82,8 +82,16 @@ class CreateFile extends AbstractCreateController
 
         $result = $result->json();
 
-        $file = File::where('random_id', $result['guid'])->first();
-        $file->uploadUrl = $result['url'];
+        if ($type != 'text/directory') {
+            $file = File::where('random_id', $result['guid'])->first();
+            $uploadUrl = Arr::get($result, 'url', null);
+            if ($uploadUrl == null) {
+                throw new Exception("bad_request");
+            }
+            $file->uploadUrl = $uploadUrl;
+        } else {
+            $file = File::where('random_id', $result['guid'])->first();
+        }
 
         return $file;
     }
