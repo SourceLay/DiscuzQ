@@ -4,15 +4,15 @@
 namespace App\Paraparty\Api\Controller\Home;
 
 
-use App\Paraparty\Api\Serializer\MainPageRecommendedModelSerializer;
-use App\Paraparty\Models\MainPageRecommendedModel;
+use App\Paraparty\Api\Serializer\HomePageRecommendedModelSerializer;
+use App\Paraparty\Models\HomePageRecommendedModel;
 use Carbon\Carbon;
 use Discuz\Api\Controller\AbstractResourceController;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
 
 
-class MainPageRecommended extends AbstractResourceController
+class HomePageRecommended extends AbstractResourceController
 {
     public $include = [
         'latestThreads',
@@ -24,14 +24,17 @@ class MainPageRecommended extends AbstractResourceController
         'hottestThreads',
         'hottestThreads.user',
         // 'hottestThreads.category',
+
+        'banners',
+        'sliders',
     ];
 
-    public $serializer = MainPageRecommendedModelSerializer::class;
+    public $serializer = HomePageRecommendedModelSerializer::class;
 
 
     protected function data(ServerRequestInterface $request, Document $document)
     {
-        $ret = new MainPageRecommendedModel();
+        $ret = new HomePageRecommendedModel();
         $ret->id = Carbon::now()->timestamp;
 
         $latestThread = $ret->latestThreads();
@@ -42,6 +45,12 @@ class MainPageRecommended extends AbstractResourceController
 
         $latestThread = $ret->hottestThreads();
         $ret->setRelation('hottestThreads', $latestThread);
+
+        $homePageBanner = $ret->homePageBanner();
+        $ret->setRelation('banners', $homePageBanner);
+
+        $homePageSlider = $ret->homePageSlider();
+        $ret->setRelation('sliders', $homePageSlider);
 
         return $ret;
     }

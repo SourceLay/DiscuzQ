@@ -7,10 +7,10 @@ use App\Api\Serializer\ThreadSerializer;
 use Discuz\Api\Serializer\AbstractSerializer;
 
 
-class MainPageRecommendedModelSerializer extends AbstractSerializer
+class HomePageRecommendedModelSerializer extends AbstractSerializer
 {
 
-    protected $type = 'main-page-recommended';
+    protected $type = 'home-page-recommended';
 
 
     public function getDefaultAttributes($model)
@@ -31,5 +31,15 @@ class MainPageRecommendedModelSerializer extends AbstractSerializer
     protected function hottestThreads($model)
     {
         return $this->hasMany($model, ThreadSerializer::class);
+    }
+
+    protected function banners($model)
+    {
+        return $this->hasMany($model, HomePageBannerSerializer::class);
+    }
+
+    protected function sliders($model)
+    {
+        return $this->hasMany($model, HomePageSliderSerializer::class);
     }
 }

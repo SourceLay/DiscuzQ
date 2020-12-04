@@ -2,7 +2,7 @@
 
 namespace App\Paraparty\Providers;
 
-use App\Paraparty\Api\Controller\Home\MainPageRecommended;
+use App\Paraparty\Api\Controller\Home\HomePageRecommended;
 use App\Paraparty\Listeners\ActivitiesListener;
 use App\Paraparty\Listeners\ReferencesListener;
 use Discuz\Foundation\AbstractServiceProvider;
@@ -39,7 +39,7 @@ class ParapartyProvider extends AbstractServiceProvider
         // API 路由组
         $route->group('/api/paraparty', function (RouteCollection $route) {
             // 添加一个 API 路由
-            $route->get('/mainpage', 'paraparty.mainpage', MainPageRecommended::class);
+            $route->get('/homepage', 'paraparty.homepage', HomePageRecommended::class);
         });
 
     }
