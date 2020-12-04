@@ -222,7 +222,7 @@ class ListPostsController extends AbstractListController
     private function canCache($params)
     {
         //pc端倒序不允许使用缓存
-        if($params['sort'] == '-createdAt'){
+        if(Arr::get($params, 'sort', null) == '-createdAt'){
             return false;
         }
         if (isset($params['filter'])) {

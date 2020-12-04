@@ -4,7 +4,6 @@
 namespace App\Paraparty\Api\Controller\Home;
 
 
-use App\Models\Thread;
 use App\Paraparty\Api\Serializer\MainPageRecommendedModelSerializer;
 use App\Paraparty\Models\MainPageRecommendedModel;
 use Carbon\Carbon;
@@ -17,8 +16,14 @@ class MainPageRecommended extends AbstractResourceController
 {
     public $include = [
         'latestThreads',
+        'latestThreads.user',
+        // 'latestThreads.category',
         'latestReplied',
+        'latestReplied.user',
+        // 'latestReplied.category',
         'hottestThreads',
+        'hottestThreads.user',
+        // 'hottestThreads.category',
     ];
 
     public $serializer = MainPageRecommendedModelSerializer::class;
