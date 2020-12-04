@@ -120,6 +120,7 @@ class UserSerializer extends AbstractSerializer
                 'mobile'            => $model->mobile,
                 'email'             => $model->email,     // Eric Modified
                 'hasPassword'       => $model->password ? true : false,
+                'hasPayPassword'    => $model->pay_password ? true : false // Eric Modified
             ];
         }
 
