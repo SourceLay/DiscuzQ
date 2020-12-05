@@ -57,7 +57,7 @@ class ListFileShare extends AbstractListController
                     $query->where('shared_type', FileShare::FILESHARE_TYPE_FREE);
 
                     // 自己的分享文件
-                    $query->owWhere('user_id', $actor->id);
+                    $query->orWhere('user_id', $actor->id);
                 });
             }
         }
