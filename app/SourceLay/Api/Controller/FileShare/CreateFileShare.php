@@ -95,7 +95,8 @@ class CreateFileShare extends AbstractCreateController
 
         $result = $this->client->shareShareByAll($fileShare);
 
-        $fileShare = FileShare::find($result);
+        $fileShareId = $result->body();
+        $fileShare = FileShare::find($fileShareId);
 
         return $fileShare;
     }
