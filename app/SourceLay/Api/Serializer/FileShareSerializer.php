@@ -46,6 +46,7 @@ class FileShareSerializer extends AbstractSerializer
         }
 
         if (
+            $this->actor->id == $model->user_id ||
             $model->shared_type == FileShare::FILESHARE_TYPE_FREE ||
             $model->shared_type == FileShare::FILESHARE_TYPE_NEEDMONEY && FileShare::isPurchased($model, $this->actor)
         ) {
