@@ -65,7 +65,7 @@ class CreateFileShare extends AbstractCreateController
         $fileShare->user_id = $actor->id;
         $fileShare->shared_desc = Arr::get($data, 'attributes.shared_desc', null);;
         $fileShare->shared_type = Arr::get($data, 'attributes.shared_type', 0);;
-        $fileShare->password = $fileShare->shared_type == 1 ? Arr::get($data, 'attributes.shared_type', null) : null;
+        $fileShare->password = $fileShare->shared_type == 1 ? Arr::get($data, 'attributes.password', null) : null;
         $fileShare->is_anonymous = Arr::get($data, 'attributes.is_anonymous', false);;
         // TODO 以后可能换成小数
         $fileShare->cost = $fileShare->shared_type == 2 ? (int)(Arr::get($data, 'attributes.cost', 0)) : null;
