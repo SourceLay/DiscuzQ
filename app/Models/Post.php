@@ -561,7 +561,7 @@ class Post extends Model
      */
     public function fileShare()
     {
-        return $this->belongsToMany(FileShare::class, FileThread::getTableName(), 'fileshare_id', 'post_id');
+        return $this->belongsToMany(FileShare::class, FileThread::getTableName(), 'post_id', 'fileshare_id');
     }
 
     /**
