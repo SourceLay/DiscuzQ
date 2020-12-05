@@ -49,10 +49,12 @@ class FileShareBBCode
 
                 if ($post->user_id == $fileShare->id) {
                     $priority = 100;
-                } else if ($fileShare->shared_type != FileShare::FILESHARE_TYPE_FREE) {
+                } else if ($fileShare->shared_type == FileShare::FILESHARE_TYPE_FREE) {
+                    $priority = 30;
+                } else if ($fileShare->shared_type == FileShare::FILESHARE_TYPE_NEEDPASSWORD) {
+                    $priority = 20;
+                } else /* if ($fileShare->shared_type == FileShare::FILESHARE_TYPE_NEEDMONEY) */ {
                     $priority = 10;
-                } else {
-                    continue;
                 }
 
                 $fileThread = FileThread::firstOrCreate(
