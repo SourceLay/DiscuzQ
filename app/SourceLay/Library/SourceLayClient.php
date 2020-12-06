@@ -25,6 +25,8 @@ class SourceLayClient
             -200 => 'failedfile_addfile',
             -201 => 'failedfile_cancelfile',
             -202 => 'failedfile_cancelcancelfile',
+            -203 => 'failedfile_alreadyexists',
+            -204 => 'failedfile_prefixnotfit',
 
             -300 => 'failedfile_downloadfile',
             -301 => 'failedfile_downloadfileouttime',
