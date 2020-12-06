@@ -302,7 +302,7 @@ class CreateOrder
                 }
 
                 // 检查分享类型
-                if ($share_info->type != FileShare::FILESHARE_TYPE_NEEDMONEY) {
+                if ($share_info->shared_type != FileShare::FILESHARE_TYPE_NEEDMONEY) {
                     throw new OrderException('order_file_error_fileshare_type_notneedmoney');
                 }
 
