@@ -309,7 +309,7 @@ class CreateOrder
                 //TODO 检查这个文件是否被帖子引用过，如果没有则有权限，如果有则判断是否有任意一个帖子该用户有权限访问
 
                 // 设置订单信息
-                $amount = $share_info->cost;
+                $amount = $share_info->cost / 100; //TODO
                 $payeeId = $share_info->user_id;
 
                 break;
