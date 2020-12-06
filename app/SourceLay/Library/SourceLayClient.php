@@ -119,7 +119,7 @@ class SourceLayClient
     }
     public function getShareDownloadUrlByPassword($shareId, $password)
     {
-        return $this->sendRequest('/file/getShareDownloadUrl', [
+        return $this->sendRequest('/file/getShareDownloadUrlByPassword', [
             'shareId' => $shareId,
             'password' => $password,
             'minutes' => 30
