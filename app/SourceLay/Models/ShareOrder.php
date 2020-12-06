@@ -17,8 +17,6 @@ class ShareOrder extends Model
 
     protected $keyType = 'int';
 
-    const UPDATED_AT = null;
-
     protected  $fillable = ['order_id', 'fileshared_id'];
 
     /**

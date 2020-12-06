@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Commands\Trade\Notify;
 
 use App\Events\Group\PaidGroup;
@@ -71,6 +75,7 @@ trait NotifyTrait
                 case Order::ORDER_TYPE_REWARD:
                 case Order::ORDER_TYPE_ATTACHMENT:
                 case Order::ORDER_TYPE_THREAD:
+                case Order::ORDER_TYPE_SOURCELAY_FILEPURCHASE:      // Eric Modified
                     // 站长作者分成配置
                     $site_author_scale = $setting->get('site_author_scale');
                     $site_master_scale = $setting->get('site_master_scale');
@@ -176,7 +181,6 @@ trait NotifyTrait
                     $question->save();
 
                     return $this->orderInfo;
-
                 default:
                     break;
             }

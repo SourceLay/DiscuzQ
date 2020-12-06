@@ -93,7 +93,7 @@ class CreateOrder
         $validator_info = $validator->make($this->data->toArray(), [
             'group_id'  => 'filled|int',
             'type'          => 'required|int',
-            'thread_id'     => 'required_if:type,' . Order::ORDER_TYPE_REWARD . ',' . Order::ORDER_TYPE_THREAD . '|int',
+            'thread_id'     => 'required_if:type,' . Order::ORDER_TYPE_REWARD . ',' . Order::ORDER_TYPE_THREAD, ',' . Order::ORDER_TYPE_SOURCELAY_FILEPURCHASE . '|int',    // Eric Modified
             'amount'        => 'required_if:type,' . Order::ORDER_TYPE_REWARD . '|numeric|min:0.01',
         ]);
 
@@ -279,6 +279,16 @@ class CreateOrder
                 }
                 break;
             case Order::ORDER_TYPE_SOURCELAY_FILEPURCHASE :
+                $thread = Thread::query()
+                    ->where('id', $this->data->get('thread_id'))
+                    ->where('is_approved', Thread::APPROVED)
+                    ->whereNull('deleted_at')
+                    ->first();
+
+                if (!$thread) {
+                    throw new OrderException('order_post_not_found');
+                }
+
                 // Eric Modified
                 $share_id = $this->data->get('share_id');
 
@@ -363,6 +373,15 @@ class CreateOrder
                     new PaidGroup($order->group_id, $this->actor, $order)
                 );
             }
+
+            // Eric Modified
+            if ($orderType == Order::ORDER_TYPE_SOURCELAY_FILEPURCHASE) {
+                $sourcelayOrder = new ShareOrder();
+                $sourcelayOrder->order_id = $order->id;
+                $sourcelayOrder->fileshared_id = $this->data->get('share_id');
+                $sourcelayOrder->save();
+            }
+
             $db->commit();          // 提交事务
             return $order;
         } catch (Exception $e) {
