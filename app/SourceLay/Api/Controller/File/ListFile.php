@@ -40,6 +40,7 @@ class ListFile extends AbstractListController
      * @param ServerRequestInterface $request
      * @param Document $document
      * @return object
+     * @throws \Tobscure\JsonApi\Exception\InvalidParameterException
      */
     protected function data(ServerRequestInterface $request, Document $document)
     {
@@ -81,21 +82,7 @@ class ListFile extends AbstractListController
 
         // 获取信息
         $files = $query->get();
-
         $include = $this->extractInclude($request);
-        foreach ($files as $file) {
-            // 对每一个 file 进行帖子和评论的关系拆解
-
-            if (in_array('threads', $include)) {
-                $threads = $file->threads();
-                $file->setRelation('threads', $threads);
-            }
-
-            if (in_array('posts', $include)) {
-                $posts = $file->posts();
-                $file->setRelation('posts', $posts);
-            }
-        }
         $files->loadMissing($include);
 
         return $files;

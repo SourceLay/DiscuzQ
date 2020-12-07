@@ -45,6 +45,7 @@ class FileSerializer extends AbstractSerializer
         $ret['is_essence'] = $model->is_essence;
         $ret['deleted_at'] = $model->deleted_at;
         $ret['deleted_id'] = $model->deleted_id;
+        $ret['is_liked'] = File::isLiked($model->id, $this->actor);
 
         if ($model->uploadUrl) {
             $ret['uploadUrl'] = $model->uploadUrl;

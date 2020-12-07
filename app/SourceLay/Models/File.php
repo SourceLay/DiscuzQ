@@ -60,7 +60,7 @@ class File extends Model
         return $this->belongsToMany(Post::class, FileThread::getTableName());
     }
 
-    public function thread()
+    public function threads()
     {
         return $this->belongsToMany(Thread::class, FileThread::getTableName());
     }
@@ -70,5 +70,8 @@ class File extends Model
         return $this->belongsTo(Thread::class, FileThread::getTableName());
     }
 
+    public static function isLiked($fileId, $actor) {
+        return FileLike::query()->where('file_id', $fileId)->where('user_id', $actor->id)->exists();
+    }
 
 }

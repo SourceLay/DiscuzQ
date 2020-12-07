@@ -20,7 +20,10 @@ class ListFileShare extends AbstractListController
      */
     public $include = [
         'user',
-        'file'
+        'file',
+        'file.likedUsers',
+        "posts",
+        "threads",
     ];
 
     /**
@@ -80,6 +83,19 @@ class ListFileShare extends AbstractListController
         $files = $query->get();
 
         $include = $this->extractInclude($request);
+        foreach ($files as $file) {
+            // 对每一个 file 进行帖子和评论的关系拆解
+
+            if (in_array('threads', $include)) {
+                $threads = $file->threads();
+                $file->setRelation('threads', $threads);
+            }
+
+            if (in_array('posts', $include)) {
+                $posts = $file->posts();
+                $file->setRelation('posts', $posts);
+            }
+        }
         $files->loadMissing($include);
 
         return $files;
