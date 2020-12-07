@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Repositories;
 
 use App\Models\Topic;
@@ -45,6 +49,20 @@ class TopicRepository extends AbstractRepository
     public function findOrFail($id, User $actor = null)
     {
         $query = $this->query()->where('id', $id);
+
+        return $query->firstOrFail();
+    }
+
+    /**
+     * Eric Modified
+     *
+     * @param $content
+     * @param User|null $actor
+     * @return Builder|\Illuminate\Database\Eloquent\Model
+     */
+    public function searchOrFail($content, User $actor = null)
+    {
+        $query = $this->query()->where('content', $content);
 
         return $query->firstOrFail();
     }

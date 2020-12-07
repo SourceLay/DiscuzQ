@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Controller\Threads;
 
 use App\Api\Serializer\ThreadSerializer;
@@ -545,7 +549,13 @@ class ListThreadsController extends AbstractListController
         // 话题文章
         if ($topicId = Arr::get($filter, 'topicId', '0')) {
             // 更新话题阅读数、主题数
-            $topic = app(TopicRepository::class)->findOrFail($topicId);
+            // Eric Modified
+            try {
+                $topic = app(TopicRepository::class)->findOrFail($topicId);
+            } catch (\Exception $e) {
+                $topic = app(TopicRepository::class)->searchOrFail(urldecode($topicId));
+                $topicId = $topic->id;
+            }
             $topic->refreshTopicViewCount();
             $topic->refreshTopicThreadCount();
 
