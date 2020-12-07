@@ -65,7 +65,7 @@ class UpdateFileShare extends AbstractCreateController
         }
 
         // 点赞相关
-        $isLiked = Arr::get($data, 'attributes.isLiked', null);
+        $isLiked = Arr::get($data, 'attributes.is_liked', null);
         if ($isLiked !== null) {
             return $this->Like($request, $fileShareId, $isLiked);
         }
