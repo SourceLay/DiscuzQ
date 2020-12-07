@@ -25,7 +25,9 @@ class ListFileShare extends AbstractListController
         'file',
         'file.likedUsers',
         "posts",
+        "posts.user",
         "threads",
+        "threads.user",
     ];
 
     /**
