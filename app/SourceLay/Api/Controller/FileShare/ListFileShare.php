@@ -28,6 +28,9 @@ class ListFileShare extends AbstractListController
         "posts.user",
         "threads",
         "threads.user",
+        "threads.firstPost",
+        "threads.lastPostedUser",
+        "threads.user.groups",
     ];
 
     /**
