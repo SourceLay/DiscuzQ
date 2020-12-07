@@ -159,7 +159,7 @@ class SourceLayClient
         return $this->sendRequest('/like/like', [
             'shareId' => $shareId,
             'fileId' => $fileId,
-            'isLike' => $isLike,
+            'like' => $isLike,
         ]);
     }
 
