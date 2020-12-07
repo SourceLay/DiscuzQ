@@ -28,6 +28,7 @@ use Discuz\Api\Serializer\AbstractSerializer;
 use Discuz\Contracts\Setting\SettingsRepository;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Tobscure\JsonApi\Relationship;
 
@@ -163,8 +164,8 @@ class UserSerializer extends AbstractSerializer
     {
         return $model->avatar ?
             $model->avatar . '?' . Carbon::parse($model->avatar_at)->timestamp : (
-                $model->email ? "https://www.gravatar.com/avatar/".($model->email ? md5(strtolower(trim($model->email))) : 0).
-                    "?d=mp&s=60&r=g" : ""
+                "https://www.gravatar.com/avatar/".($model->email ? md5(strtolower(trim($model->email))) : 0).
+                    "?d=mp&s=60&r=g"
             );
     }
 
