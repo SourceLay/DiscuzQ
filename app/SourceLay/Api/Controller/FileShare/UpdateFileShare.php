@@ -79,9 +79,7 @@ class UpdateFileShare extends AbstractCreateController
         $fileShare = FileShare::find($fileShareId);
         $file = $fileShare->file;
 
-        $result = $this->client->like($fileShare->id, $file->id, $isLiked);
-
-        strtolower($result->body());
+        $this->client->like($fileShare->id, $file->id, $isLiked);
 
         $file = FileShare::find($fileShareId);
         $include = $this->extractInclude($request);
