@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 
+/**
+ * Eric Modified
+ */
+
 namespace App\Api\Controller\Topic;
 
 use App\Api\Serializer\TopicSerializer;
@@ -45,6 +49,14 @@ class ResourceTopicController extends AbstractResourceController
     {
         $id = Arr::get($request->getQueryParams(), 'id', 0);
 
-        return $this->topics->findOrFail($id);
+        try {
+            if (is_numeric($id)) {
+                return $this->topics->findOrFail($id);
+            }
+        } catch (\Exception $e){}
+
+        $id = urldecode($id);
+
+        return $this->topics->searchOrFail($id);
     }
 }
