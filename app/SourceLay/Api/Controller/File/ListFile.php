@@ -18,7 +18,7 @@ class ListFile extends AbstractListController
     public $optionalInclude = [
         "likedUsers",
         "posts",
-        "thread",
+        "threads",
     ];
 
     /**
@@ -83,6 +83,19 @@ class ListFile extends AbstractListController
         $files = $query->get();
 
         $include = $this->extractInclude($request);
+        foreach ($files as $file) {
+            // 对每一个 file 进行帖子和评论的关系拆解
+
+            if (in_array('threads', $include)) {
+                $threads = $file->threads();
+                $file->setRelation('threads', $threads);
+            }
+
+            if (in_array('posts', $include)) {
+                $posts = $file->posts();
+                $file->setRelation('posts', $posts);
+            }
+        }
         $files->loadMissing($include);
 
         return $files;
