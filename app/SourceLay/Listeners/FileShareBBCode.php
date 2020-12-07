@@ -52,9 +52,9 @@ class FileShareBBCode
                 } else if ($fileShare->shared_type == FileShare::FILESHARE_TYPE_FREE) {
                     $priority = 30;
                 } else if ($fileShare->shared_type == FileShare::FILESHARE_TYPE_NEEDPASSWORD) {
-                    $priority = 20;
+                    continue;
                 } else /* if ($fileShare->shared_type == FileShare::FILESHARE_TYPE_NEEDMONEY) */ {
-                    $priority = 10;
+                    continue;
                 }
 
                 $fileThread = FileThread::firstOrCreate(
