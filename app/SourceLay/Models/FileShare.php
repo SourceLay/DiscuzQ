@@ -3,6 +3,7 @@
 namespace App\SourceLay\Models;
 
 use App\Models\Order;
+use App\Models\Post;
 use App\Models\Thread;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -92,21 +93,19 @@ class FileShare extends Model
         return $ret;
     }
 
-    /**
-     * Eric Modified
-     */
+    public function share()
+    {
+        return $this->hasMany(FileThread::class, 'fileshare_id');
+    }
+
     public function posts()
     {
-        return $this->belongsToMany(Thread::class, FileThread::getTableName(), 'fileshare_id', 'post_id');
+        return $this->belongsToMany(Post::class, FileThread::getTableName(), 'fileshare_id');
     }
 
-    /**
-     * Eric Modified
-     */
     public function threads()
     {
-        return $this->belongsToMany(Thread::class, FileThread::getTableName(), 'fileshare_id', 'thread_id');
+        return $this->belongsToMany(Thread::class, FileThread::getTableName(), 'fileshare_id');
     }
-
 
 }

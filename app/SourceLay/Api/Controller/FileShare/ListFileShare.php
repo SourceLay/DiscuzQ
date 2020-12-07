@@ -4,6 +4,8 @@
 namespace App\SourceLay\Api\Controller\FileShare;
 
 
+use App\Models\Post;
+use App\Models\Thread;
 use App\SourceLay\Api\Serializer\FileShareSerializer;
 use App\SourceLay\Models\FileShare;
 use Discuz\Api\Controller\AbstractListController;
@@ -83,19 +85,28 @@ class ListFileShare extends AbstractListController
         $files = $query->get();
 
         $include = $this->extractInclude($request);
-        foreach ($files as $file) {
-            // 对每一个 file 进行帖子和评论的关系拆解
-
-            if (in_array('threads', $include)) {
-                $threads = $file->threads();
-                $file->setRelation('threads', $threads);
-            }
-
-            if (in_array('posts', $include)) {
-                $posts = $file->posts();
-                $file->setRelation('posts', $posts);
-            }
-        }
+        //foreach ($files as $file) {
+        //    // 对每一个 file 进行帖子和评论的关系拆解
+        //    $shareRecords = $file->share()->get()->sortByDesc('priority');
+//
+        //    $threadIds = Collect();
+        //    $postsIds = Collect();
+//
+        //    foreach ($shareRecords as $shareRecord) {
+        //        $threadIds->push($shareRecord->thread_id);
+        //        $postsIds->push($shareRecord->post_id);
+        //    }
+//
+        //    if (in_array('threads', $include)) {
+        //        $threads = Thread::query()->where('id', 'in', $threadIds->toArray());
+        //        $file->setRelation('threads', $threads);
+        //    }
+//
+        //    if (in_array('posts', $include)) {
+        //        $posts = Post::query()->where('id', 'in', $postsIds->toArray());
+        //        $file->setRelation('posts', $posts);
+        //    }
+        //}
         $files->loadMissing($include);
 
         return $files;

@@ -3,11 +3,12 @@
 
 namespace App\SourceLay\Api\Serializer;
 
+use App\Api\Serializer\PostSerializer;
+use App\Api\Serializer\ThreadSerializer;
 use App\Api\Serializer\UserSerializer;
 use App\SourceLay\Library\SourceLayClient;
 use App\SourceLay\Models\FileShare;
 use Discuz\Api\Serializer\AbstractSerializer;
-use Tobscure\JsonApi\Relationship;
 
 class FileShareSerializer extends AbstractSerializer
 {
@@ -72,21 +73,24 @@ class FileShareSerializer extends AbstractSerializer
         return $ret;
     }
 
-    /**
-     * @param $post
-     * @return Relationship
-     */
-    protected function user($post)
+
+    protected function user($model)
     {
-        return $this->hasOne($post, UserSerializer::class);
+        return $this->hasOne($model, UserSerializer::class);
     }
 
-    /**
-     * @param $post
-     * @return Relationship
-     */
-    protected function file($post)
+    protected function file($model)
     {
-        return $this->hasOne($post, FileSerializer::class);
+        return $this->hasOne($model, FileSerializer::class);
+    }
+
+    protected function threads($model)
+    {
+        return $this->hasMany($model, ThreadSerializer::class);
+    }
+
+    protected function posts($model)
+    {
+        return $this->hasMany($model, PostSerializer::class);
     }
 }
