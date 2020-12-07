@@ -54,6 +54,7 @@ class CategorySerializer extends AbstractSerializer
             'created_at'        => $this->formatDate($model->created_at),
             'updated_at'        => $this->formatDate($model->updated_at),
             'canCreateThread'   => $this->actor->can('createThread', $model),
+            'banner'            => $model->banner ?? '', // Eric Modified
             'activities_daily'  => $daily,      // Eric Modified
         ];
     }
