@@ -3,6 +3,9 @@
 use Illuminate\Support\Str;
 
 return [
+    /**
+     * 模仿 GitHub 的帖子引用传送门功能
+     */
     "references" =>[
         "url" => [
             "detecting" => [
@@ -29,6 +32,7 @@ return [
 
         /**
          * 引用标记用的 UID
+         * 请保证本 uid 不会被普通用户使用
          */
         "bot_user_id" => 2
     ]
