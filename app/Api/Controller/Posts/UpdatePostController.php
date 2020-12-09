@@ -48,7 +48,8 @@ class UpdatePostController extends AbstractResourceController
         'lastThreeComments',
         'lastThreeComments.user',
         'lastThreeComments.replyUser',
-        'likedUsers'                        // Eric Modified
+        'user.groups',                      // Eric Modified
+        'likedUsers',                       // Eric Modified
     ];
 
     /**
