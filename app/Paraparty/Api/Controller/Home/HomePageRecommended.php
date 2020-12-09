@@ -6,8 +6,10 @@ namespace App\Paraparty\Api\Controller\Home;
 
 use App\Paraparty\Api\Serializer\HomePageRecommendedModelSerializer;
 use App\Paraparty\Models\HomePageRecommendedModel;
+use App\Repositories\ThreadRepository;
 use Carbon\Carbon;
 use Discuz\Api\Controller\AbstractResourceController;
+use Illuminate\Contracts\Routing\UrlGenerator;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
 
@@ -30,20 +32,32 @@ class HomePageRecommended extends AbstractResourceController
     ];
 
     public $serializer = HomePageRecommendedModelSerializer::class;
+    /**
+     * @var ThreadRepository
+     */
+    private $threads;
 
+    /**
+     * @param ThreadRepository $threads
+     */
+    public function __construct(ThreadRepository $threads)
+    {
+        $this->threads = $threads;
+    }
 
     protected function data(ServerRequestInterface $request, Document $document)
     {
+        $actor = $request->getAttribute('actor');
         $ret = new HomePageRecommendedModel();
         $ret->id = Carbon::now()->timestamp;
 
-        $latestThread = $ret->latestThreads();
+        $latestThread = $this->threads->query()->whereVisibleTo($actor)->orderBy('created_at', 'desc')->take(8)->get();
         $ret->setRelation('latestThreads', $latestThread);
 
-        $latestThread = $ret->latestReplied();
+        $latestThread = $this->threads->query()->whereVisibleTo($actor)->orderBy('updated_at', 'desc')->take(8)->get();
         $ret->setRelation('latestReplied', $latestThread);
 
-        $latestThread = $ret->hottestThreads();
+        $latestThread = $this->threads->query()->whereVisibleTo($actor)->orderBy('post_count', 'desc')->take(8)->get();
         $ret->setRelation('hottestThreads', $latestThread);
 
         $homePageBanner = $ret->homePageBanner();
