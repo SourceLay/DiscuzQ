@@ -31,7 +31,7 @@ class FileShareBBCode
 
                 // 检查新的修改内容里是否完全包含之前已写入的分享信息
                 $result = Arr::first($fileshare_ids,  function ($value, $key) use ($fileThread) {
-                    return $value == $fileThread->id;
+                    return $value == $fileThread->fileshare_id;
                 }, null);
 
                 // 在新的帖子里找不到这个分享
