@@ -47,7 +47,7 @@ class FileShareBBCode
                 $fileShare = FileShare::find($fileshrae_id);
                 if ($fileShare == null) continue;
 
-                if ($post->user_id == $fileShare->id) {
+                if ($post->user_id == $fileShare->user_id) {
                     $priority = 100;
                 } else if ($fileShare->shared_type == FileShare::FILESHARE_TYPE_FREE) {
                     $priority = 30;
